@@ -1,0 +1,28 @@
+[general]
+name=Reservoir Creator
+qgisMinimumVersion=3.0
+description=This plugin calculates elevation-area-storage relationship of a dam placed on a water course.
+version=1.0.0
+author=Faruk Gurbuz
+email=gurbuz2561@gmail.com
+
+about=This tool takes advantage of existing processing algorithms that come with QGIS to obtain and visualize elevation-area-storage relationship of a hypothetical dam/embankment on a water-course. It also automatically creates a polygon for the inundated area by the dam and extracts corresponding Digital Elevation Model (DEM). 
+
+tracker=https://github.com/gurbuzf/reservoir_creator/issues
+repository=https://github.com/gurbuzf/reservoir_creator
+
+hasProcessingProvider=no
+# Uncomment the following line and add your changelog:
+# changelog=
+
+tags=python, reservoir, elevation-storage
+
+homepage=http://homepage
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
