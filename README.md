@@ -5,6 +5,23 @@ A QGIS3 plugin that eases the calculation of elevation-area-storage curves for d
 
 This tool takes advantage of existing processing algorithms that come with QGIS to obtain and visualize elevation-area-storage relationship of a hypothetical dam/embankment on a water-course. It also automatically creates a polygon for the inundated area by the dam and extracts corresponding Digital Elevation Model (DEM). 
 
+Usage
+------
+* Download the zip file. Open QGIS. From the menu item, go to Plugins > Manage and Install Items. Select "Install from ZIP" tab on the left panel.
+
+* Open reservoir_creator plugin. Provide the needed layers and select the layers that you want to save. After specifing the saving directory, click run. Depending on the density of the contours lines and the size of the area of interest, calculations may take up to 1-2 minutes. 
+
+![Main Dialog](/data/dialog.png "Reservoir Creator Dialog")
+
+* Sample data (DEM and line vector) is included in data folder. One first need to create a contour layer from the DEM using GDAL/Contour tool (not Contour Polygons) in Processing Toolbox. Attribute name should remain as 'ELEV'. Interval between contour lines should be small enough to capture the variations in topography. For this example, set the interval as 1.0 or 2.0.      
+
+![Plot](/data/result.png "Resulting Figure")
+
+
+
+![Example](/data/ex.png "Inundated Area")
+
+** Since the sample DEM was created before the dam was built, we are able to estimate the inundated area by the dam and other characteristics such as elevation-storage relationship. The above experiment is a good experiment to validate the output of the reservoir_creator plugin.   
 
 License
 --------
