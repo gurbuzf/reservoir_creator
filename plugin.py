@@ -27,7 +27,7 @@ class ReservoirCreatorPlugin:
         self.action = QAction(icon, 'Reservoir Creator', self.iface.mainWindow())
         self.action.setObjectName('ReservoirCreatorAction')
         self.action.setCheckable(True)
-        self.action.setStatusTip('Draw a dam axis and compute the reservoir it creates')
+        self.action.setStatusTip('Draw a line across a valley and see the reservoir behind it')
         self.action.toggled.connect(self.toggle)
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToMenu(MENU, self.action)

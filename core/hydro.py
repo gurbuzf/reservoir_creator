@@ -24,13 +24,12 @@ where ``a`` is the cell area.  Isolated depressions that are not connected
 to the reservoir are therefore never counted (unlike simple
 "all pixels below h" approaches).
 
-The flood stops when the water finds another way out, which defines the
-**maximum impoundable level** of the dam axis:
+The flood stops at the requested water level (``max_level``), or earlier
+when the water finds another way out:
 
-* ``bypass``  - water flows around the dam (dam ends too low or a saddle),
+* ``bypass``  - water reaches the other side of the line (through a saddle),
 * ``edge``    - the reservoir reaches the edge of the analysed DEM window,
-* ``nodata``  - the reservoir reaches a DEM void,
-* ``max_level`` - a user-defined ceiling was reached first.
+* ``nodata``  - the reservoir reaches a DEM void.
 """
 
 import heapq
@@ -191,46 +190,6 @@ def priority_flood(z, seed, blocked, stop_cells=None, max_level=math.inf,
                        pour_cell=divmod(rise_idx, cols))
 
 
-def geodesic_distance(domain, sources, cell_size, is_cancelled=None):
-    """Distance (map units) from ``sources`` travelling only inside ``domain``.
-
-    8-connected Dijkstra with chamfer weights (1, sqrt 2).  Used to measure the
-    reservoir length along the (possibly winding) valley.
-    """
-    rows, cols = domain.shape
-    n = rows * cols
-    dom = bytearray(domain.ravel().astype(np.uint8).tobytes())
-    dist = array('d', [math.inf]) * n
-    heap = []
-    for i in np.flatnonzero((sources & domain).ravel()):
-        dist[int(i)] = 0.0
-        heap.append((0.0, int(i)))
-    heapq.heapify(heap)
-    d1, d2 = float(cell_size), float(cell_size) * math.sqrt(2.0)
-    nbrs = ((-1, 0, d1), (1, 0, d1), (0, -1, d1), (0, 1, d1),
-            (-1, -1, d2), (-1, 1, d2), (1, -1, d2), (1, 1, d2))
-    heappop, heappush = heapq.heappop, heapq.heappush
-    count = 0
-    while heap:
-        d, i = heappop(heap)
-        if d > dist[i]:
-            continue
-        r, c = divmod(i, cols)
-        for dr, dc, w in nbrs:
-            rr, cc = r + dr, c + dc
-            if 0 <= rr < rows and 0 <= cc < cols:
-                j = rr * cols + cc
-                if dom[j]:
-                    nd = d + w
-                    if nd < dist[j]:
-                        dist[j] = nd
-                        heappush(heap, (nd, j))
-        count += 1
-        if is_cancelled is not None and count % 50000 == 0 and is_cancelled():
-            raise Cancelled()
-    return np.frombuffer(dist, dtype=np.float64).reshape(rows, cols).copy()
-
-
 # ---------------------------------------------------------------------------
 # Elevation - area - capacity
 # ---------------------------------------------------------------------------
@@ -279,83 +238,3 @@ def level_series(bottom, top, step):
     levels = levels[levels >= bottom - 1e-9]
     levels = np.concatenate(([bottom], levels, [top]))
     return np.unique(np.round(levels, 6))
-
-
-# ---------------------------------------------------------------------------
-# Dam axis
-# ---------------------------------------------------------------------------
-
-def crest_length(stations, ground, crest):
-    """Length of the dam axis whose ground lies below ``crest`` (linear interp)."""
-    s = np.asarray(stations, dtype=np.float64)
-    g = np.asarray(ground, dtype=np.float64)
-    total = 0.0
-    for k in range(len(s) - 1):
-        g0, g1 = g[k], g[k + 1]
-        ds = s[k + 1] - s[k]
-        if not (np.isfinite(g0) and np.isfinite(g1)):
-            continue
-        b0, b1 = g0 < crest, g1 < crest
-        if b0 and b1:
-            total += ds
-        elif b0 != b1:
-            total += ds * abs(crest - (g0 if b0 else g1)) / abs(g1 - g0)
-    return total
-
-
-def embankment(stations, ground, crest, crest_width, slope_us, slope_ds):
-    """Indicative embankment geometry for a trapezoidal dam section.
-
-    The cross-section at each station is a trapezoid of height
-    ``H = crest - ground`` with top width ``crest_width`` and side slopes
-    ``slope_us`` / ``slope_ds`` (horizontal : 1 vertical)::
-
-        A(H) = b H + (m_us + m_ds) H^2 / 2
-
-    Returns dict(height, crest_length, fill_volume, max_section_area).
-    Foundation excavation and cut-off works are ignored.
-    """
-    s = np.asarray(stations, dtype=np.float64)
-    g = np.asarray(ground, dtype=np.float64)
-    valid = np.isfinite(g)
-    h = np.where(valid, np.clip(crest - g, 0.0, None), 0.0)
-    area = np.where(h > 0, crest_width * h + 0.5 * (slope_us + slope_ds) * h * h, 0.0)
-    # trapezoidal rule (np.trapz is deprecated in numpy 2)
-    fill = float(0.5 * np.sum((area[1:] + area[:-1]) * np.diff(s))) if len(s) > 1 else 0.0
-    return {
-        'height': float(crest - np.nanmin(g)) if valid.any() else float('nan'),
-        'crest_length': crest_length(s, g, crest),
-        'fill_volume': fill,
-        'max_section_area': float(area.max()) if len(area) else 0.0,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Sediment / hydrology indicators
-# ---------------------------------------------------------------------------
-
-SECONDS_PER_YEAR = 365.25 * 86400.0
-
-
-def brune_trap_efficiency(capacity_m3, annual_inflow_m3):
-    """Sediment trap efficiency [%] from Brune's median curve (Dendy, 1974).
-
-    ``TE = 100 * 0.97 ** (0.19 ** log10(C/I))``
-    """
-    if not annual_inflow_m3 or annual_inflow_m3 <= 0 or capacity_m3 <= 0:
-        return float('nan')
-    ci = capacity_m3 / annual_inflow_m3
-    return 100.0 * 0.97 ** (0.19 ** math.log10(ci))
-
-
-def residence_time_days(volume_m3, mean_flow_m3s):
-    if not mean_flow_m3s or mean_flow_m3s <= 0:
-        return float('nan')
-    return volume_m3 / (mean_flow_m3s * 86400.0)
-
-
-def shoreline_development(perimeter_m, area_m2):
-    """Shoreline development index  D_L = P / (2 sqrt(pi A))  (1 = circle)."""
-    if area_m2 <= 0:
-        return float('nan')
-    return perimeter_m / (2.0 * math.sqrt(math.pi * area_m2))

@@ -27,7 +27,7 @@ import urllib.request
 import numpy as np
 from osgeo import gdal
 
-from . import terrain
+from . import hydro, terrain
 
 GEDTM30_ZENODO_RECORD = '18887460'
 GEDTM30_FALLBACK_URL = ('https://s3.opengeohub.org/global/edtm/'
@@ -193,6 +193,11 @@ def download_dem(source_key, bounds, work_srs, out_path, fetch_text=None,
     look-up (a URL or a local/self-hosted copy).  Returns (out_path, notes).
     """
     notes = []
+
+    def check_cancel():
+        if feedback is not None and feedback.is_cancelled():
+            raise hydro.Cancelled()
+
     if feedback:
         feedback.set_status('Locating {}…'.format(SOURCES_BY_KEY[source_key].short))
     lon0, lat0, lon1, lat1 = _lonlat_bounds(bounds, work_srs)
@@ -228,6 +233,7 @@ def download_dem(source_key, bounds, work_srs, out_path, fetch_text=None,
             urls = copernicus_tile_urls(lon0, lat0, lon1, lat1)
             tiles = []
             for u in urls:
+                check_cancel()
                 try:
                     if gdal.VSIStatL('/vsicurl/' + u) is not None:
                         tiles.append('/vsicurl/' + u)
@@ -243,18 +249,34 @@ def download_dem(source_key, bounds, work_srs, out_path, fetch_text=None,
         else:
             raise ValueError('Unknown DEM source ' + source_key)
 
+        check_cancel()
+        name = SOURCES_BY_KEY[source_key].short
         if feedback:
-            feedback.set_status('Downloading {} (only the area around the dam)…'
-                                .format(SOURCES_BY_KEY[source_key].short))
+            feedback.set_status('Downloading {} (only the area around the line)… '
+                                'press Cancel to stop'.format(name))
+
+        def progress(complete, _message, _data):
+            # called by GDAL while it reads; returning 0 aborts the download
+            if feedback is None:
+                return 1
+            if feedback.is_cancelled():
+                return 0
+            feedback.set_progress(5 + 60 * complete)
+            feedback.set_status('Downloading {}… {:.0f}% (press Cancel to stop)'
+                                .format(name, 100 * complete))
+            return 1
+
         res = 30.0   # both products are 1 arc-second (~30 m)
         warp_opts = gdal.WarpOptions(
             format='MEM', dstSRS=work_srs.ExportToWkt(), outputBounds=bounds,
             xRes=res, yRes=res, resampleAlg='bilinear', outputType=gdal.GDT_Float64,
-            srcNodata=nodata, dstNodata=-1.0e30, multithread=True)
+            srcNodata=nodata, dstNodata=-1.0e30, multithread=True, callback=progress)
         try:
             mem = gdal.Warp('', src, options=warp_opts)
         except RuntimeError as e:
+            check_cancel()
             raise terrain.TerrainError('Download failed: {}'.format(e))
+        check_cancel()
         if mem is None:
             raise terrain.TerrainError('Download failed: {}'.format(gdal.GetLastErrorMsg()))
         arr = mem.GetRasterBand(1).ReadAsArray()

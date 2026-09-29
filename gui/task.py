@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Background task: optional DEM download + reservoir analysis."""
+"""Background task: optional DEM download + reservoir computation."""
 
 import hashlib
 import os
 import traceback
 
-from qgis.core import (QgsApplication, QgsBlockingNetworkRequest, QgsMessageLog, Qgis,
+from qgis.core import (Qgis, QgsApplication, QgsBlockingNetworkRequest, QgsMessageLog,
                        QgsSettings, QgsTask)
 from qgis.PyQt.QtCore import QUrl, pyqtSignal
 from qgis.PyQt.QtNetwork import QNetworkRequest
@@ -37,8 +37,8 @@ def gdal_proxy_config():
     cfg = {'GDAL_HTTP_PROXY': '{}:{}'.format(host, port) if port else host}
     user = s.value('proxy/proxyUser', '', type=str)
     if user:
-        cfg['GDAL_HTTP_PROXYUSERPWD'] = '{}:{}'.format(user, s.value('proxy/proxyPassword', '',
-                                                                      type=str))
+        cfg['GDAL_HTTP_PROXYUSERPWD'] = '{}:{}'.format(
+            user, s.value('proxy/proxyPassword', '', type=str))
     return cfg
 
 
@@ -63,18 +63,17 @@ class _Feedback(analysis.Feedback):
 
 
 class ReservoirTask(QgsTask):
-    """Runs in a worker thread; results are read in ``taskCompleted``."""
+    """Runs in a worker thread; the dock reads ``result`` / ``error`` afterwards."""
 
     message = pyqtSignal(str)
 
-    def __init__(self, params, download_source=None, gedtm30_url=None):
-        super().__init__('Reservoir Creator analysis', QgsTask.Flag.CanCancel)
+    def __init__(self, params, download_source=None):
+        super().__init__('Reservoir Creator', QgsTask.Flag.CanCancel)
         self.params = params
         self.download_source = download_source
-        self.gedtm30_url = gedtm30_url or None
         self.gdal_config = gdal_proxy_config()
         self.cache_dir = dem_cache_dir() if download_source else None
-        self.model = None
+        self.result = None
         self.error = None
         self.downloaded_path = None
         self.download_notes = []
@@ -82,9 +81,8 @@ class ReservoirTask(QgsTask):
     def run(self):
         fb = _Feedback(self)
         try:
-            if self.download_source:
-                self._download(fb)
-            self.model = analysis.run_analysis(self.params, fb)
+            get_dem = (lambda b, w, r: self._download(b, w, fb)) if self.download_source else None
+            self.result = analysis.run(self.params, fb, get_dem=get_dem)
             return True
         except hydro.Cancelled:
             self.error = 'Cancelled.'
@@ -95,23 +93,21 @@ class ReservoirTask(QgsTask):
             QgsMessageLog.logMessage(traceback.format_exc(), LOG_TAG, Qgis.MessageLevel.Critical)
         return False
 
-    def _download(self, fb):
-        p = self.params
-        work, _coords, bounds, _lat = analysis.plan_frame(p.dam_coords, p.dam_crs, p.radius_m)
+    def _download(self, bounds, work, fb):
         key = '{}|{}|{}'.format(self.download_source, work.ExportToWkt(),
                                 ','.join('{:.0f}'.format(b) for b in bounds))
         digest = hashlib.sha1(key.encode('utf-8')).hexdigest()[:12]
         out = os.path.join(self.cache_dir, '{}_{}.tif'.format(self.download_source, digest))
-        if os.path.exists(out):
-            fb.set_status('Using cached {} download…'.format(
-                dem_sources.SOURCES_BY_KEY[self.download_source].short))
-        else:
-            fb.set_progress(1)
+        if not os.path.exists(out):
             tmp = out + '.part.tif'
-            _path, notes = dem_sources.download_dem(
-                self.download_source, bounds, work, tmp, fetch_text=qgis_fetch_text,
-                feedback=fb, extra_gdal_config=self.gdal_config, gedtm30_url=self.gedtm30_url)
-            os.replace(tmp, out)
-            self.download_notes = notes
+            try:
+                _p, notes = dem_sources.download_dem(
+                    self.download_source, bounds, work, tmp, fetch_text=qgis_fetch_text,
+                    feedback=fb, extra_gdal_config=self.gdal_config)
+                os.replace(tmp, out)
+                self.download_notes = notes
+            finally:
+                if os.path.exists(tmp):          # cancelled or failed: no partial file
+                    os.remove(tmp)
         self.downloaded_path = out
-        p.dem_path = out
+        return out

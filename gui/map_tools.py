@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Map tool for drawing a dam axis on the canvas (Profile Tool style).
+"""Map tool for drawing the dam line on the canvas (Profile Tool style).
 
 * left click      - add a vertex (snaps to the project's snapping settings)
-* right click / double click - finish the axis (needs >= 2 vertices)
+* right click / double click - finish the line (needs >= 2 points)
 * Backspace       - remove the last vertex
 * Esc             - cancel
 """
@@ -68,7 +68,7 @@ class DamAxisTool(QgsMapTool):
         p = self._snapped(event)
         if self.points:
             self._redraw(p)
-            self.status.emit('Dam axis: {:,.0f} m · {} vertices - right-click to finish, '
+            self.status.emit('Line: {:,.0f} m · {} points - right-click to finish, '
                              'Backspace to undo, Esc to cancel'
                              .format(self._length(self.points + [p]), len(self.points) + 1))
 

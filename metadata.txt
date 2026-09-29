@@ -3,12 +3,12 @@ name=Reservoir Creator
 qgisMinimumVersion=3.34
 qgisMaximumVersion=4.99
 supportsQt6=True
-description=Elevation-area-capacity curves, inundated area and dam sizing for a dam axis drawn on a DEM.
+description=Draw a line across a valley and get the reservoir behind it: flooded area, volume and elevation-area-volume curve from a DEM.
 version=2.0.0
 author=Faruk Gurbuz
 email=gurbuz2561@gmail.com
 
-about=Draw a dam axis across a valley (or pick a line layer) and Reservoir Creator computes the reservoir it would impound directly from a digital elevation model - no contour lines needed. A priority flood from the upstream face of the dam gives the exact elevation-area-capacity relationship, the maximum impoundable level (where water would bypass the dam or spill over a saddle), the water surface and water-depth grid at any level, and planning indicators: dam height, crest length, indicative embankment fill, storage-to-fill ratio, mean and maximum depth, reservoir length, shoreline development, dead/live storage and, with a mean inflow, residence time and Brune sediment trap efficiency. Elevation data can come from a project layer or be downloaded on the fly for the dam area only: GEDTM30 (global bare-earth DTM, OpenGeoHub, CC-BY 4.0) or Copernicus GLO-30. Results are shown in a dockable panel with interactive charts and can be exported to GeoPackage, GeoTIFF and CSV. Requires matplotlib (bundled with QGIS on Windows and macOS).
+about=Draw a line across a valley (or pick a line layer). The water level is the ground height at the lower end of the line, and the reservoir is everything behind the line that is connected to it and below that level, computed from the DEM alone. The panel shows the water level, volume, surface area, maximum depth, the elevation-area-volume curve and the ground profile of the line, and draws the reservoir on the map. The DEM can be a project layer or downloaded for the area around the line only (GEDTM30 bare-earth DTM or Copernicus GLO-30), with cancel at any time. Results can be added to the map or exported (GeoPackage, GeoTIFF, CSV, PNG). Requires matplotlib (bundled with QGIS on Windows and macOS).
 
 tracker=https://github.com/gurbuzf/reservoir_creator/issues
 repository=https://github.com/gurbuzf/reservoir_creator
@@ -17,19 +17,16 @@ homepage=https://github.com/gurbuzf/reservoir_creator
 hasProcessingProvider=no
 changelog=
     2.0.0
-    - Complete rewrite: DEM-only priority-flood method (no contour layer needed); hollows that are not connected to the reservoir are no longer counted
-    - Maximum impoundable level with bypass / saddle / DEM-edge diagnosis and spill point on the map
-    - Automatic upstream-side detection and automatic metric working CRS (any DEM CRS, including geographic)
-    - Draw the dam axis directly on the map, or use a line layer
-    - DEM download for the dam area: GEDTM30 (bare-earth DTM, via Zenodo) and Copernicus GLO-30
-    - Dockable panel with interactive area-capacity, dam-axis section and dam-sizing charts, water-level slider with live flood extent
-    - Planning indicators: dam height, crest length, embankment fill, storage/fill ratio, depths, reservoir length, shoreline index, dead/live storage, residence time, trap efficiency
-    - Exports: GeoPackage, water-depth GeoTIFF, CSV table, chart images
+    - Rewrite: draw the dam line on the map (or use a line layer); the water level is the lower end of the line; the reservoir is computed from the DEM only - no contour layer and no other parameters
+    - Hollows that are not connected to the reservoir are no longer counted; a lower way out through the valley rim is detected and marked
+    - Upstream side and analysis area found automatically; any DEM CRS works
+    - DEM download for the area around the line (GEDTM30, Copernicus GLO-30), cancellable
+    - Dockable panel with interactive area-volume curve and line profile; results added to the map or exported
     - Runs in the background; QGIS 3.34 LTR to QGIS 4 (Qt5 and Qt6)
     1.0.0
     - First experimental release
 
-tags=hydrology,reservoir,dam,dem,dtm,water,storage,elevation-area-capacity,flood,hydropower,water resources
+tags=hydrology,reservoir,dam,dem,dtm,water,volume,elevation-area-volume,flood,water resources
 category=Plugins
 icon=icons/icon.png
 experimental=True
