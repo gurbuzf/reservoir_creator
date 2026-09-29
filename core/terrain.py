@@ -12,6 +12,8 @@ import math
 import numpy as np
 from osgeo import gdal, ogr, osr
 
+from .i18n import Msg, tr
+
 # Elevations outside this range are treated as no-data (catches unflagged
 # -9999 / -32768 / int32-min fill values).
 VALID_Z_RANGE = (-1000.0, 9500.0)
@@ -158,7 +160,7 @@ def dem_info(path):
     except RuntimeError:            # gdal.UseExceptions() is active
         ds = None
     if ds is None:
-        raise TerrainError('Cannot open the DEM: {}'.format(path))
+        raise TerrainError(tr('Cannot open the DEM: {}').format(path))
     band = ds.GetRasterBand(1)
     info = {
         'srs_wkt': ds.GetProjection(),
@@ -172,7 +174,7 @@ def dem_info(path):
         'nodata': band.GetNoDataValue(),
     }
     if not info['srs_wkt']:
-        raise TerrainError('The DEM has no coordinate reference system.')
+        raise TerrainError(tr('The DEM has no coordinate reference system.'))
     return info
 
 
@@ -207,21 +209,36 @@ def _finalise(z, nodata, scale, offset, notes):
         zeros = z == 0
         if zeros.mean() > 0.01:
             z[zeros] = np.nan
-            notes.append('The DEM has no no-data value; cells equal to 0 were treated as no-data.')
+            notes.append(Msg('The DEM has no no-data value; cells equal to 0 were treated '
+                             'as no-data.'))
     if scale not in (None, 1.0) or offset not in (None, 0.0):
         z = z * (scale if scale is not None else 1.0) + (offset or 0.0)
     z[(z < VALID_Z_RANGE[0]) | (z > VALID_Z_RANGE[1])] = np.nan
     return z
 
 
-def read_dem_window(path, work_srs, bounds, max_cells=6_000_000, lat=0.0,
+FAST_MODE_CELLS = 6_000_000
+MAX_FULL_RES_CELLS = 30_000_000   # ~240 MB per float64 array; beyond this QGIS may run out of memory
+
+
+def _too_large(cells, res):
+    return TerrainError(tr(
+        'At full resolution ({:.1f} m cells) the analysis area holds {:,.0f} million cells, '
+        'more than this computer can safely process ({:,.0f} million). Turn on "Fast mode" '
+        'to reduce the resolution, or use a DEM clipped to the valley.')
+        .format(res, cells / 1e6, MAX_FULL_RES_CELLS / 1e6))
+
+
+def read_dem_window(path, work_srs, bounds, max_cells=None, lat=0.0,
                     scale=None, offset=None):
     """Read the DEM over ``bounds`` (work CRS) as a :class:`Grid`.
 
     The DEM is read natively when it already uses ``work_srs`` (no
     resampling); otherwise it is warped with bilinear resampling to a square
-    grid at its native resolution.  Large windows are coarsened so that the
-    grid holds at most ``max_cells`` cells.
+    grid at its native resolution.  The resolution is only reduced when the
+    caller asks for it (``max_cells``, "Fast mode"): then large windows are
+    coarsened to at most ``max_cells`` cells.  Without it a window above
+    ``MAX_FULL_RES_CELLS`` is refused rather than silently coarsened.
 
     ``scale``/``offset`` override the band's own scaling (used for integer
     products such as GEDTM30, stored in decimetres).
@@ -248,15 +265,20 @@ def read_dem_window(path, work_srs, bounds, max_cells=6_000_000, lat=0.0,
         x0, x1 = max(0, x0), min(cols_total, x1)
         y0, y1 = max(0, y0), min(rows_total, y1)
         if x1 - x0 < 3 or y1 - y0 < 3:
-            raise TerrainError('The dam axis lies outside the DEM.')
+            raise TerrainError(tr('The line lies outside the DEM.'))
         xs, ys = x1 - x0, y1 - y0
-        factor = max(1, int(math.ceil(math.sqrt(xs * ys / float(max_cells)))))
+        if max_cells:
+            factor = max(1, int(math.ceil(math.sqrt(xs * ys / float(max_cells)))))
+        elif xs * ys > MAX_FULL_RES_CELLS:
+            raise _too_large(xs * ys, abs(gt[1]))
+        else:
+            factor = 1
         ds = gdal.Open(path)
         band = ds.GetRasterBand(1)
         bx, by = max(3, xs // factor), max(3, ys // factor)
         if factor > 1:
-            notes.append('DEM coarsened {}x to {:.1f} m cells to keep the analysis fast.'
-                         .format(factor, abs(gt[1]) * xs / bx))
+            notes.append(Msg('Fast mode: DEM coarsened {}x to {:.1f} m cells.',
+                             factor, abs(gt[1]) * xs / bx))
             arr = band.ReadAsArray(x0, y0, xs, ys, buf_xsize=bx, buf_ysize=by,
                                    resample_alg=gdal.GRIORA_Average)
         else:
@@ -268,9 +290,11 @@ def read_dem_window(path, work_srs, bounds, max_cells=6_000_000, lat=0.0,
 
     res = native_resolution_m(info, lat)
     cells = (maxx - minx) * (maxy - miny) / (res * res)
-    if cells > max_cells:
+    if max_cells and cells > max_cells:
         res *= math.sqrt(cells / float(max_cells))
-        notes.append('DEM resampled to {:.1f} m cells to keep the analysis fast.'.format(res))
+        notes.append(Msg('Fast mode: DEM resampled to {:.1f} m cells.', res))
+    elif not max_cells and cells > MAX_FULL_RES_CELLS:
+        raise _too_large(cells, res)
     res = round(res, 3)
     warp_opts = gdal.WarpOptions(
         format='MEM', dstSRS=work_srs.ExportToWkt(),
@@ -280,16 +304,17 @@ def read_dem_window(path, work_srs, bounds, max_cells=6_000_000, lat=0.0,
     try:
         ds = gdal.Warp('', path, options=warp_opts)
     except RuntimeError as e:
-        raise TerrainError('Could not read/reproject the DEM: {}'.format(e))
+        raise TerrainError(tr('Could not read/reproject the DEM: {}').format(e))
     if ds is None:
-        raise TerrainError('Could not read/reproject the DEM: {}'.format(gdal.GetLastErrorMsg()))
+        raise TerrainError(tr('Could not read/reproject the DEM: {}')
+                           .format(gdal.GetLastErrorMsg()))
     arr = ds.GetRasterBand(1).ReadAsArray()
     nodata = arr <= -1.0e29
     arr[nodata] = info['nodata'] if info['nodata'] is not None else 0.0
     z = _finalise(arr, info['nodata'], scale, offset, notes)
     z[nodata] = np.nan
     if np.isnan(z).all():
-        raise TerrainError('The DEM has no data around the dam axis.')
+        raise TerrainError(tr('The DEM has no data around the line.'))
     return Grid(z, ds.GetGeoTransform(), work_srs.ExportToWkt()), notes
 
 
@@ -399,7 +424,7 @@ def write_geotiff(path, grid, array, nodata=-9999.0):
     ds = drv.Create(path, cols, rows, 1, gdal.GDT_Float32,
                     options=['COMPRESS=DEFLATE', 'PREDICTOR=3', 'TILED=YES'])
     if ds is None:
-        raise TerrainError('Cannot write {}'.format(path))
+        raise TerrainError(tr('Cannot write {}').format(path))
     ds.SetGeoTransform(grid.gt)
     ds.SetProjection(grid.srs_wkt)
     band = ds.GetRasterBand(1)

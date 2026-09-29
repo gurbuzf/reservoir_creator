@@ -197,3 +197,155 @@ def test_copernicus_tiles():
     urls = dem_sources.copernicus_tile_urls(41.9, 40.7, 42.1, 40.9)
     assert len(urls) == 2
     assert urls[0].endswith('Copernicus_DSM_COG_10_N40_00_E041_00_DEM.tif')
+
+
+def test_full_resolution_unless_fast_mode(tmp_path, monkeypatch):
+    dem = v_valley(tmp_path)                      # 10 m cells, 400 x 900 = 360k cells
+    r = run(dem, [(-150, 0), (100, 0)])
+    assert r.grid.cell_size == pytest.approx(10.0)
+    assert any('full DEM resolution (10.0 m' in n.text for n in r.notes)
+    # fast mode may coarsen (threshold lowered so this small DEM qualifies)
+    monkeypatch.setattr(terrain, 'FAST_MODE_CELLS', 50_000)
+    f = run(dem, [(-150, 0), (100, 0)], fast=True)
+    assert f.grid.cell_size > 10.0
+    assert any(n.text.startswith('Fast mode') for n in f.notes)
+    assert not any('full DEM resolution' in n.text for n in f.notes)
+
+
+def test_too_large_at_full_resolution_is_refused_not_coarsened(tmp_path, monkeypatch):
+    dem = v_valley(tmp_path)
+    monkeypatch.setattr(terrain, 'MAX_FULL_RES_CELLS', 50_000)
+    with pytest.raises(terrain.TerrainError, match='Fast mode'):
+        run(dem, [(-150, 0), (100, 0)])
+
+
+def test_window_grows_only_towards_the_reservoir(tmp_path):
+    # the valley rises to the north, so only the north side of the window grows
+    dem = v_valley(tmp_path, s=0.2, g=0.002, ymax=14000.0)
+    r = run(dem, [(-150, 0), (100, 0)])
+    r0 = analysis.initial_radius([(-150, 0), (100, 0)], 'EPSG:32633')
+    assert r.margins['n'] > r0
+    assert r.margins['s'] == r.margins['w'] == r.margins['e'] == pytest.approx(r0)
+
+
+def test_tiles_are_cached_and_give_the_same_reservoir(tmp_path, sample_dem):
+    geo = str(tmp_path / 'dem_4326.tif')
+    gdal.Warp(geo, sample_dem, dstSRS='EPSG:4326', resampleAlg='bilinear', srcNodata=0,
+              dstNodata=-9999, outputType=gdal.GDT_Float32)
+    work, _c, bounds, _lat = analysis.plan_frame(SAMPLE_AXIS, 'EPSG:32637', 20000)
+    cache = str(tmp_path / 'cache')
+    vrt, _n, n_tiles, n_new = dem_sources.fetch_tiles('gedtm30', bounds, work, cache,
+                                                      gedtm30_url=geo)
+    assert n_tiles > 1 and n_new == n_tiles            # the reservoir spans a tile seam
+    vrt2, _n, _t, n_new2 = dem_sources.fetch_tiles('gedtm30', bounds, work, cache,
+                                                   gedtm30_url=geo)
+    assert n_new2 == 0 and vrt2 == vrt                 # second time: all from cache
+    direct = run(geo, SAMPLE_AXIS, 'EPSG:32637')
+    tiled = run(vrt, SAMPLE_AXIS, 'EPSG:32637')
+    assert tiled.volume_m3 == pytest.approx(direct.volume_m3, rel=1e-6)
+    assert tiled.volume_m3 / 1e6 == pytest.approx(328.2, rel=0.05)
+
+
+def test_tile_download_can_be_cancelled(tmp_path, sample_dem):
+    class Stop(analysis.Feedback):
+        def is_cancelled(self):
+            return True
+    work, _c, bounds, _lat = analysis.plan_frame(SAMPLE_AXIS, 'EPSG:32637', 5000)
+    cache = str(tmp_path / 'cache')
+    with pytest.raises(hydro.Cancelled):
+        dem_sources.fetch_tiles('gedtm30', bounds, work, cache, gedtm30_url=sample_dem,
+                                feedback=Stop())
+    assert not any(f.endswith('.tif') for _d, _s, fs in os.walk(cache) for f in fs)
+
+
+def test_maximum_level_below_the_line_end_sets_the_water_level(tmp_path):
+    s, g = 0.2, 0.01
+    dem = v_valley(tmp_path, s, g)
+    r = run(dem, [(-150, 0), (100, 0)], max_level=115.0)      # line ends: 130 / 120 m
+    assert r.water_level == pytest.approx(115.0, abs=0.01)
+    assert r.level_source == 'max'
+    d = 15.0
+    assert r.volume_m3 == pytest.approx(d ** 3 / (3 * g * s), rel=0.03)
+    assert any('maximum of 115.0 m' in n.text for n in r.notes)
+
+
+def test_maximum_level_above_the_line_end_is_capped_with_a_warning(tmp_path):
+    dem = v_valley(tmp_path)
+    r = run(dem, [(-150, 0), (100, 0)], max_level=125.0)
+    assert r.water_level == pytest.approx(120.0, abs=0.01)
+    assert r.level_source == 'line'
+    assert any(n.level == 'warning' and '125.0 m' in n.text for n in r.notes)
+
+
+def test_maximum_level_below_the_river_bed_is_rejected(tmp_path):
+    dem = v_valley(tmp_path)
+    with pytest.raises(terrain.TerrainError, match='maximum water level'):
+        run(dem, [(-150, 0), (100, 0)], max_level=90.0)
+
+
+def test_maximum_depth_is_measured_from_the_riverbed_at_the_line(tmp_path):
+    s, g = 0.2, 0.01
+    dem = v_valley(tmp_path, s, g)
+    # riverbed under the line: 100 m (101 m at the nearest 10 m cell centre);
+    # 15 m depth -> ~116 m, below the line end (120 m)
+    r = run(dem, [(-150, 0), (100, 0)], max_depth=15.0)
+    assert r.line_bed == pytest.approx(100.0, abs=1.01)
+    assert r.water_level == pytest.approx(r.line_bed + 15.0, abs=1e-6)
+    assert r.level_source == 'depth' and not r.cap_ignored
+    d = r.water_level - 100.0
+    assert r.volume_m3 == pytest.approx(d ** 3 / (3 * g * s), rel=0.05)
+
+
+def test_maximum_depth_above_the_line_goes_ahead_with_the_line(tmp_path):
+    dem = v_valley(tmp_path)
+    r = run(dem, [(-150, 0), (100, 0)], max_depth=30.0)      # 130 m > line end 120 m
+    assert r.water_level == pytest.approx(120.0, abs=0.01)
+    assert r.level_source == 'line' and r.cap_ignored
+    assert any(n.level == 'warning' and 'maximum depth' in n.text for n in r.notes)
+
+
+def _tr_strings():
+    """Every literal passed to tr() in the plugin's code."""
+    import ast
+    import glob
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    found = set()
+    for path in glob.glob(os.path.join(root, '**', '*.py'), recursive=True):
+        if os.sep + 'tests' + os.sep in path:
+            continue
+        with open(path, encoding='utf-8') as f:
+            tree = ast.parse(f.read())
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Call) and getattr(node.func, 'id', None) in ('tr', 'Msg', 'N_')
+                    and node.args and isinstance(node.args[0], ast.Constant)
+                    and isinstance(node.args[0].value, str)):
+                found.add(node.args[0].value)
+    return found
+
+
+def test_turkish_translation_is_complete_and_keeps_placeholders():
+    import string
+    STRINGS = core('i18n_tr').STRINGS
+    wanted = _tr_strings() | {s.name for s in dem_sources.SOURCES} \
+        | {s.description for s in dem_sources.SOURCES} | set(analysis.SIDE_NAMES.values())
+    missing = sorted(wanted - set(STRINGS))
+    assert not missing, missing
+
+    def fields(s):
+        return [(f, spec) for _lit, f, spec, _conv in string.Formatter().parse(s) if f is not None]
+    bad = [k for k, v in STRINGS.items() if fields(k) != fields(v)]
+    assert not bad, bad
+
+
+def test_notes_follow_a_language_switch_after_the_run(tmp_path):
+    i18n = core('i18n')
+    dem = v_valley(tmp_path)
+    r = run(dem, [(-150, 0), (100, 0)], max_depth=30.0)       # computed in English
+    note = next(n for n in r.notes if n.kind == 'cap')
+    assert 'higher than the line can hold' in note.text
+    try:
+        i18n.set_language('tr')
+        assert 'çizginin tutabileceğinden yüksek' in note.text
+        assert 'maksimum derinlik' in note.text               # the nested phrase too
+    finally:
+        i18n.set_language('en')

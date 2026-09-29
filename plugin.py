@@ -3,6 +3,7 @@
 
 import os
 
+from qgis.core import QgsSettings
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon
 
@@ -10,6 +11,8 @@ try:  # Qt6 (QGIS 4)
     from qgis.PyQt.QtGui import QAction
 except ImportError:  # Qt5 (QGIS 3)
     from qgis.PyQt.QtWidgets import QAction
+
+from .core.i18n import set_language, tr
 
 MENU = '&Reservoir Creator'
 
@@ -23,11 +26,12 @@ class ReservoirCreatorPlugin:
         self.dock = None
 
     def initGui(self):  # noqa: N802 (QGIS API)
+        set_language(QgsSettings().value('ReservoirCreator/language', 'en', type=str))
         icon = QIcon(os.path.join(self.plugin_dir, 'icons', 'icon.svg'))
         self.action = QAction(icon, 'Reservoir Creator', self.iface.mainWindow())
         self.action.setObjectName('ReservoirCreatorAction')
         self.action.setCheckable(True)
-        self.action.setStatusTip('Draw a line across a valley and see the reservoir behind it')
+        self.action.setStatusTip(tr('Draw a line across a valley and see the reservoir behind it'))
         self.action.toggled.connect(self.toggle)
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToMenu(MENU, self.action)
@@ -36,6 +40,7 @@ class ReservoirCreatorPlugin:
         from .gui.dock import ReservoirDock
         self.dock = ReservoirDock(self.iface, self.plugin_dir, self.iface.mainWindow())
         self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
+        self.dock.place()          # a separate window unless the user docked it last time
         self.dock.closedStateChanged.connect(self._dock_closed)
 
     def toggle(self, checked):
@@ -49,6 +54,8 @@ class ReservoirCreatorPlugin:
             self.dock.activate_drawing()
 
     def _dock_closed(self, closed):
+        if closed and self.dock is not None:
+            self.dock.save_placement()
         if self.action is not None:
             self.action.blockSignals(True)
             self.action.setChecked(not closed)
@@ -56,6 +63,7 @@ class ReservoirCreatorPlugin:
 
     def unload(self):
         if self.dock is not None:
+            self.dock.save_placement()
             self.dock.cleanup()
             self.iface.removeDockWidget(self.dock)
             self.dock.deleteLater()

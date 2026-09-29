@@ -17,13 +17,17 @@ told.  The analysis window grows automatically until the reservoir fits.
 """
 
 import math
+import time
+from contextlib import contextmanager
 
 import numpy as np
 
 from . import hydro, terrain
+from .i18n import Msg, tr
 from .terrain import TerrainError
 
-MAX_RADIUS_M = 100_000.0
+MAX_RADIUS_M = 200_000.0          # per side; the cell budget usually stops growth first
+INITIAL_RADIUS_MAX_M = 30_000.0
 
 
 class Feedback:
@@ -38,13 +42,45 @@ class Feedback:
     def is_cancelled(self):
         return False
 
+    def log(self, text):
+        """Diagnostic line (step timings); the QGIS task sends it to the log panel."""
+        pass
+
+
+class StepTimer:
+    """Wall-clock time of every step, logged as it finishes and kept in the result."""
+
+    def __init__(self, fb):
+        self.fb = fb
+        self.steps = []          # (name, seconds)
+        self.start = time.perf_counter()
+
+    @contextmanager
+    def step(self, name):
+        t = time.perf_counter()
+        try:
+            yield
+        finally:
+            dt = time.perf_counter() - t
+            self.steps.append((name, dt))
+            self.fb.log('{:<44} {:8.2f} s'.format(name, dt))
+
+    @property
+    def total(self):
+        return time.perf_counter() - self.start
+
 
 class Note:
     INFO, WARNING = 'info', 'warning'
 
-    def __init__(self, level, text):
+    def __init__(self, level, text, kind=None):
         self.level = level
-        self.text = text
+        self._text = text       # a Msg / English text, translated when shown
+        self.kind = kind        # 'resolution' | 'fast' | 'cap' | None (for the panel)
+
+    @property
+    def text(self):
+        return str(self._text) if isinstance(self._text, Msg) else tr(self._text)
 
     def __repr__(self):
         return '[{}] {}'.format(self.level, self.text)
@@ -55,10 +91,13 @@ class Params:
 
     ``side`` ('auto' | 'left' | 'right' of the drawing direction) only
     matters when the automatic choice of the reservoir side is wrong.
+    ``fast`` lets large windows be coarsened (the DEM's own resolution is
+    kept otherwise).
     """
 
     def __init__(self, dem_path, line_coords, line_crs, side='auto', radius_m=None,
-                 dem_scale=None, dem_offset=None, max_cells=6_000_000):
+                 dem_scale=None, dem_offset=None, fast=False, max_level=None,
+                 max_depth=None):
         self.dem_path = dem_path
         self.line_coords = [(float(x), float(y)) for x, y in line_coords]
         self.line_crs = line_crs
@@ -66,7 +105,11 @@ class Params:
         self.radius_m = radius_m
         self.dem_scale = dem_scale
         self.dem_offset = dem_offset
-        self.max_cells = max_cells
+        self.fast = fast
+        # design maximum water level (m); the line's lower end still caps it
+        self.max_level = None if max_level is None else float(max_level)
+        # or a design maximum depth (m) above the riverbed at the line
+        self.max_depth = None if max_depth is None else float(max_depth)
 
 
 class Result:
@@ -83,6 +126,10 @@ class Result:
         self.end_levels = None      # (start, end) ground elevation
         self.water_level = None
         self.limited_by = None      # None | 'saddle' | 'edge' | 'nodata'
+        self.level_source = 'line'  # 'line' (lower end) | 'max' | 'depth' (user's limit)
+        self.line_bed = None        # lowest ground along the line (riverbed at the dam)
+        self.cap = None             # user's limit: (level m a.s.l., 'max' | 'depth')
+        self.cap_ignored = False    # the limit was above what the line can hold
         self.pour_point = None
         self.side = None
         self.bed_level = None
@@ -92,6 +139,10 @@ class Result:
         self.table = None
         self.radius_m = None
         self.window_can_grow = False   # reservoir hit the window edge, not the DEM's
+        self.grow_sides = []           # which window sides it hit ('w', 's', 'e', 'n')
+        self.margins = None            # window extent beyond the line, per side (m)
+        self.fast = False              # resolution reduced on request (Fast mode)
+        self.timings = []              # (step, seconds), see StepTimer
 
     @property
     def srs_wkt(self):
@@ -114,9 +165,15 @@ class Result:
 
 # ---------------------------------------------------------------------------
 
-def plan_frame(line_coords, line_crs, radius_m, dem_srs=None):
+SIDES = ('w', 's', 'e', 'n')
+SIDE_NAMES = {'w': 'west', 's': 'south', 'e': 'east', 'n': 'north'}
+
+
+def plan_frame(line_coords, line_crs, margins, dem_srs=None):
     """Working CRS (DEM CRS if metric, else local UTM), line coordinates in
-    it, and the analysis bounds.  Returns (work_srs, coords, bounds, lat)."""
+    it, and the analysis bounds.  ``margins`` is one distance for all sides or
+    a dict {'w','s','e','n'} (m beyond the line's bounding box).
+    Returns (work_srs, coords, bounds, lat)."""
     src = terrain.make_srs(line_crs)
     ll = terrain.transform_points(line_coords, src, terrain.geographic_srs())
     lon = float(np.mean([p[0] for p in ll]))
@@ -126,8 +183,9 @@ def plan_frame(line_coords, line_crs, radius_m, dem_srs=None):
     coords = terrain.transform_points(line_coords, src, work)
     xs = [p[0] for p in coords]
     ys = [p[1] for p in coords]
-    r = float(radius_m)
-    return work, coords, (min(xs) - r, min(ys) - r, max(xs) + r, max(ys) + r), lat
+    m = margins if isinstance(margins, dict) else dict.fromkeys(SIDES, float(margins))
+    return work, coords, (min(xs) - m['w'], min(ys) - m['s'],
+                          max(xs) + m['e'], max(ys) + m['n']), lat
 
 
 def line_length(line_coords, line_crs):
@@ -137,89 +195,151 @@ def line_length(line_coords, line_crs):
 
 
 def initial_radius(line_coords, line_crs):
-    """Start with a window ~20x the line length (at least 5 km)."""
-    return max(5000.0, 20.0 * line_length(line_coords, line_crs))
+    """Start with a window ~20x the line length (5 to 30 km beyond the line)."""
+    return min(INITIAL_RADIUS_MAX_M, max(5000.0, 20.0 * line_length(line_coords, line_crs)))
+
+
+def _window_cells(line_coords, line_crs, margins, cell_size):
+    _w, _c, (x0, y0, x1, y1), _lat = plan_frame(line_coords, line_crs, margins)
+    return (x1 - x0) * (y1 - y0) / (cell_size * cell_size)
 
 
 def run(params, feedback=None, get_dem=None):
     """Compute the reservoir, enlarging the window until it fits.
 
+    The window only grows on the side where the water reached its edge, so a
+    long, narrow reservoir gets a long, narrow window.  After the first pass
+    the reservoir side is known and the side test is skipped.
+
     ``get_dem(bounds, work_srs, radius)`` may return a DEM path for the
     window (used for downloads); by default ``params.dem_path`` is used.
     """
     fb = feedback or Feedback()
-    radius = params.radius_m or initial_radius(params.line_coords, params.line_crs)
+    timer = StepTimer(fb)
+    r0 = params.radius_m or initial_radius(params.line_coords, params.line_crs)
+    margins = dict.fromkeys(SIDES, r0)
+    side = params.side
+    attempt = 0
     while True:
+        attempt += 1
+        fb.log('--- pass {}: window beyond the line W {:.0f} / S {:.0f} / E {:.0f} / N {:.0f} km'
+               .format(attempt, *(margins[s] / 1000.0 for s in SIDES)))
         if get_dem is not None:
-            work, _c, bounds, _lat = plan_frame(params.line_coords, params.line_crs, radius)
-            params.dem_path = get_dem(bounds, work, radius)
-        res = _run_once(params, radius, fb)
-        if not res.window_can_grow or radius >= MAX_RADIUS_M or params.radius_m:
+            work, _c, bounds, _lat = plan_frame(params.line_coords, params.line_crs, margins)
+            with timer.step('Get DEM (download or cache)'):
+                params.dem_path = get_dem(bounds, work, max(margins.values()))
+        res = _run_once(params, margins, fb, timer, side)
+        side = res.side                      # known now: no side test on later passes
+        if not res.grow_sides or params.radius_m:
             break
-        radius = min(radius * 2.0, MAX_RADIUS_M)
-        fb.set_status('Reservoir reaches the edge of the window - enlarging to {:.0f} km…'
-                      .format(radius / 1000.0))
-    _add_notes(res)
+        grow = [s for s in res.grow_sides if margins[s] < MAX_RADIUS_M]
+        if not grow:
+            break
+        bigger = dict(margins)
+        for s in grow:
+            bigger[s] = min(2.0 * margins[s], MAX_RADIUS_M)
+        if not params.fast:
+            cells = _window_cells(params.line_coords, params.line_crs, bigger,
+                                  res.grid.cell_size)
+            if cells > terrain.MAX_FULL_RES_CELLS:   # checked before downloading anything
+                fb.log('    stop growing: next window would hold {:,.0f} million cells'
+                       .format(cells / 1e6))
+                res.notes.append(Note(Note.WARNING,
+                                      Msg('The reservoir continues beyond the analysis area, '
+                                          'which cannot grow further at full resolution ({:,.0f} '
+                                          'million cells). Turn on "Fast mode" to follow it '
+                                          'further.', cells / 1e6)))
+                break
+        margins = bigger
+        fb.set_status(tr('Reservoir reaches the {} edge of the window - extending it to '
+                         '{:.0f} km…')
+                      .format(tr(' and ').join(tr(SIDE_NAMES[s]) for s in grow),
+                              max(margins[s] for s in grow) / 1000.0))
+    _add_notes(res, params)
+    res.timings = timer.steps
+    fb.log('--- total {:.2f} s in {} pass(es); grid {:,} cells of {:.1f} m; reservoir {:,} cells'
+           .format(timer.total, attempt, res.grid.z.size, res.grid.cell_size,
+                   int(res.table.counts(res.water_level))))
     fb.set_progress(100)
     return res
 
 
-def _run_once(params, radius, fb):
+def _run_once(params, margins, fb, timer=None, side=None):
+    timer = timer or StepTimer(fb)
     res = Result()
-    res.radius_m = radius
+    res.margins = dict(margins)
+    res.radius_m = max(margins.values())
+    side = side or params.side
     if len(params.line_coords) < 2:
-        raise TerrainError('The line needs at least two points.')
+        raise TerrainError(tr('The line needs at least two points.'))
 
-    fb.set_status('Reading elevation data…')
+    fb.set_status(tr('Reading elevation data…'))
     fb.set_progress(5)
-    info = terrain.dem_info(params.dem_path)
-    work, coords, bounds, lat = plan_frame(params.line_coords, params.line_crs, radius,
-                                           terrain.make_srs(info['srs_wkt']))
-    grid, grid_notes = terrain.read_dem_window(
-        params.dem_path, work, bounds, max_cells=params.max_cells, lat=lat,
-        scale=params.dem_scale, offset=params.dem_offset)
-    res.notes = [Note(Note.INFO, t) for t in grid_notes]
+    with timer.step('Read DEM window'):
+        info = terrain.dem_info(params.dem_path)
+        work, coords, bounds, lat = plan_frame(params.line_coords, params.line_crs, margins,
+                                               terrain.make_srs(info['srs_wkt']))
+        grid, grid_notes = terrain.read_dem_window(
+            params.dem_path, work, bounds,
+            max_cells=terrain.FAST_MODE_CELLS if params.fast else None, lat=lat,
+            scale=params.dem_scale, offset=params.dem_offset)
+    fb.log('    grid {} x {} = {:,} cells of {:.1f} m'.format(
+        grid.shape[1], grid.shape[0], grid.z.size, grid.cell_size))
+    res.notes = [Note(Note.INFO, t, 'fast' if t.startswith('Fast mode') else None)
+                 for t in grid_notes]
     res.grid, res.line_coords = grid, coords
+    res.fast = params.fast
     if fb.is_cancelled():
         raise hydro.Cancelled()
 
     # the line as a wall, and its ground profile
     fb.set_progress(15)
-    blocked = terrain.rasterize_polyline(grid, coords)
-    res.blocked = blocked
-    st, pxs, pys, ground, seg_idx = _profile(grid, coords, grid.cell_size / 2.0)
+    with timer.step('Line as wall + ground profile'):
+        blocked = terrain.rasterize_polyline(grid, coords)
+        res.blocked = blocked
+        st, pxs, pys, ground, seg_idx = _profile(grid, coords, grid.cell_size / 2.0)
     res.stations, res.ground = st, ground
     if not (np.isfinite(ground[0]) and np.isfinite(ground[-1])):
-        raise TerrainError('An end of the line is outside the DEM (no elevation there).')
+        raise TerrainError(tr('An end of the line is outside the DEM (no elevation there).'))
     res.end_levels = (float(ground[0]), float(ground[-1]))
     level = min(res.end_levels)
 
     k = int(np.nanargmin(ground))
     if ground[k] >= level - 1e-6:
-        raise TerrainError('The line does not cross a valley: no point along it is lower '
-                           'than its ends.')
+        raise TerrainError(tr('The line does not cross a valley: no point along it is lower '
+                              'than its ends.'))
+    res.line_bed = float(ground[k])
+    res.cap = _user_cap(params, res.line_bed)
+    if res.cap is not None and res.cap[0] < level:
+        level, res.level_source = res.cap
+    if ground[k] >= level - 1e-6:
+        raise TerrainError(tr('The maximum water level ({:.1f} m a.s.l.) is not above the '
+                              'riverbed at the line ({:.1f} m a.s.l.): no reservoir.')
+                           .format(level, ground[k]))
     thalweg = (float(pxs[k]), float(pys[k]))
     si = int(seg_idx[k])
     d = np.subtract(coords[si + 1], coords[si])
     d = d / (np.hypot(*d) or 1.0)
-    open_mask = hydro.open_boundary_mask(grid.z)
-    left, right = _side_cells(grid, blocked, open_mask, thalweg, d)
+    with timer.step('Boundary mask + side cells'):
+        open_mask = hydro.open_boundary_mask(grid.z)
+        left, right = _side_cells(grid, blocked, open_mask, thalweg, d)
     if not left or not right:
-        raise TerrainError('The line is too close to the DEM edge or a no-data area.')
+        raise TerrainError(tr('The line is too close to the DEM edge or a no-data area.'))
     seed = {'left': _lowest(grid, left), 'right': _lowest(grid, right)}
     stop = {'left': _mask(grid.shape, right), 'right': _mask(grid.shape, left)}
 
     # which side is the reservoir?
-    fb.set_status('Finding the upstream side…')
+    fb.set_status(tr('Finding the upstream side…'))
     fb.set_progress(25)
     floods = {}
-    if params.side in ('left', 'right'):
-        side = params.side
-    else:
+    if side not in ('left', 'right'):
         for s in ('left', 'right'):
-            floods[s] = hydro.priority_flood(grid.z, seed[s], blocked, stop_cells=stop[s],
-                                             max_level=level, max_cells=250_000,
-                                             is_cancelled=fb.is_cancelled)
+            with timer.step('Side test flood ({})'.format(s)):
+                floods[s] = hydro.priority_flood(grid.z, seed[s], blocked, stop_cells=stop[s],
+                                                 max_level=level, max_cells=250_000,
+                                                 is_cancelled=fb.is_cancelled)
+            fb.log('    {} side: {:,} cells, rise {:.1f} m, stop: {}'.format(
+                s, floods[s].n_cells, floods[s].rise, floods[s].reason))
         fl, fr = floods['left'], floods['right']
         # the downstream side drains away along the river almost at once
         if abs(fl.rise - fr.rise) > 0.5:
@@ -228,12 +348,15 @@ def _run_once(params, radius, fb):
             side = 'left' if fl.seed_level >= fr.seed_level else 'right'
     res.side = side
 
-    fb.set_status('Filling the reservoir…')
+    fb.set_status(tr('Filling the reservoir…'))
     fb.set_progress(40)
     flood = floods.get(side)
     if flood is None or flood.reason == hydro.STOP_CELL_LIMIT:
-        flood = hydro.priority_flood(grid.z, seed[side], blocked, stop_cells=stop[side],
-                                     max_level=level, is_cancelled=fb.is_cancelled)
+        with timer.step('Reservoir flood ({} side)'.format(side)):
+            flood = hydro.priority_flood(grid.z, seed[side], blocked, stop_cells=stop[side],
+                                         max_level=level, is_cancelled=fb.is_cancelled)
+    fb.log('    reservoir flood: {:,} cells, stop: {} at {:.1f} m'.format(
+        flood.n_cells, flood.reason, flood.limit_level))
     if flood.reason == hydro.STOP_MAX_LEVEL:
         water = level
     else:
@@ -243,41 +366,78 @@ def _run_once(params, radius, fb):
         if flood.pour_cell is not None:
             res.pour_point = tuple(float(v) for v in grid.cell_center(*flood.pour_cell))
         if flood.reason == hydro.STOP_EDGE and flood.stop_cell is not None:
-            res.window_can_grow = _edge_is_window(grid, bounds, flood.stop_cell)
+            res.grow_sides = _window_edge_sides(grid, bounds, flood.stop_cell)
+            res.window_can_grow = bool(res.grow_sides)
     res.spill = flood.spill
     wet = np.isfinite(flood.spill) & (flood.spill <= water)
     if wet.sum() < 1:
-        raise TerrainError('No reservoir forms behind this line. Try the other side '
-                           '(Flip side) or check the DEM.')
+        raise TerrainError(tr('No reservoir forms behind this line. Try the other side '
+                           '(Flip side) or check the DEM.'))
     res.water_level = float(water)
-    res.table = hydro.CapacityTable(flood.spill[wet], grid.z[wet], grid.cell_area)
-    res.bed_level = float(np.min(flood.spill[wet]))
-    res.area_m2 = float(res.table.area(water))
-    res.volume_m3 = float(res.table.volume(water))
+    with timer.step('Area-volume table'):
+        res.table = hydro.CapacityTable(flood.spill[wet], grid.z[wet], grid.cell_area)
+        res.bed_level = float(np.min(flood.spill[wet]))
+        res.area_m2 = float(res.table.area(water))
+        res.volume_m3 = float(res.table.volume(water))
 
-    fb.set_status('Tracing the shoreline…')
+    fb.set_status(tr('Tracing the shoreline…'))
     fb.set_progress(85)
-    res.polygon_wkt, _a, _p = terrain.water_surface_polygon(grid, flood.spill, water, blocked)
+    with timer.step('Shoreline polygon'):
+        res.polygon_wkt, _a, _p = terrain.water_surface_polygon(grid, flood.spill, water,
+                                                                blocked)
     return res
 
 
-def _add_notes(res):
+def _user_cap(params, line_bed):
+    """The user's limit as (level m a.s.l., 'max' | 'depth'), the lower of the two."""
+    caps = []
+    if params.max_level is not None:
+        caps.append((params.max_level, 'max'))
+    if params.max_depth is not None:
+        caps.append((line_bed + params.max_depth, 'depth'))
+    return min(caps) if caps else None
+
+
+def _add_notes(res, params=None):
     lo = min(res.end_levels)
+    target = lo if res.cap is None else min(lo, res.cap[0])
+    add = res.notes.append
+    if not any(n.kind == 'fast' for n in res.notes):
+        add(Note(Note.INFO, Msg('Computed at full DEM resolution ({:.1f} m cells).',
+                                res.grid.cell_size), 'resolution'))
+    if res.level_source == 'max':
+        add(Note(Note.INFO, Msg('Water level limited to your maximum of {:.1f} m a.s.l.; the '
+                                'lower end of the line is {:.1f} m higher ({:.1f} m a.s.l.).',
+                                res.cap[0], lo - res.cap[0], lo)))
+    elif res.level_source == 'depth':
+        add(Note(Note.INFO, Msg('Water level limited to your maximum depth of {:.1f} m above the '
+                                'riverbed at the line ({:.1f} m a.s.l.), i.e. {:.1f} m a.s.l.; '
+                                'the lower end of the line is {:.1f} m higher.',
+                                res.cap[0] - res.line_bed, res.line_bed, res.cap[0],
+                                lo - res.cap[0])))
+    elif res.cap is not None:
+        res.cap_ignored = True
+        wanted = (Msg('maximum water level ({:.1f} m a.s.l.)', res.cap[0])
+                  if res.cap[1] == 'max' else
+                  Msg('maximum depth ({:.1f} m, i.e. {:.1f} m a.s.l.)',
+                      res.cap[0] - res.line_bed, res.cap[0]))
+        add(Note(Note.WARNING, Msg('Your {} is higher than the line can hold: water would flow '
+                                   'around its lower end at {:.1f} m a.s.l., so that level is '
+                                   'used. Draw the line further up the valley sides to allow '
+                                   'more.', wanted, lo), 'cap'))
     if res.limited_by == 'saddle':
-        res.notes.append(Note(Note.WARNING,
-                              'Water escapes through a low point in the rim at {:.1f} m, below '
-                              'the line ends ({:.1f} m). The reservoir is shown at {:.1f} m; '
-                              'the escape point is marked on the map.'
-                              .format(res.water_level, lo, res.water_level)))
+        add(Note(Note.WARNING, Msg('Water escapes through a low point in the rim at {:.1f} m '
+                                   'a.s.l., below the intended level ({:.1f} m a.s.l.). The '
+                                   'reservoir is shown at {:.1f} m a.s.l.; the escape point is '
+                                   'marked on the map.', res.water_level, target,
+                                   res.water_level)))
     elif res.limited_by == 'edge':
-        res.notes.append(Note(Note.WARNING,
-                              'The reservoir reaches the edge of the DEM at {:.1f} m, so it is '
-                              'cut there. Use a DEM covering the whole valley.'
-                              .format(res.water_level)))
+        add(Note(Note.WARNING, Msg('The reservoir reaches the edge of the DEM at {:.1f} m '
+                                   'a.s.l., so it is cut there. Use a DEM covering the whole '
+                                   'valley.', res.water_level)))
     elif res.limited_by == 'nodata':
-        res.notes.append(Note(Note.WARNING,
-                              'The reservoir reaches missing DEM data (no-data) at {:.1f} m, '
-                              'so it is cut there.'.format(res.water_level)))
+        add(Note(Note.WARNING, Msg('The reservoir reaches missing DEM data (no-data) at {:.1f} m '
+                                   'a.s.l., so it is cut there.', res.water_level)))
 
 
 # ---------------------------------------------------------------------------
@@ -316,24 +476,25 @@ def _side_cells(grid, blocked, open_mask, centre, direction, radius_cells=3):
     return left, right
 
 
-def _edge_is_window(grid, bounds, cell):
-    """True if ``cell`` lies on a grid side that was cut by the analysis window
-    (a bigger window would show more), False if that side is the DEM's own edge."""
+def _window_edge_sides(grid, bounds, cell):
+    """Sides ('w', 's', 'e', 'n') of the analysis window that ``cell`` lies on
+    and that were cut by the window (a bigger window would show more); a side
+    that is the DEM's own edge is left out."""
     rows, cols = grid.shape
     gx0, gy0, gx1, gy1 = grid.bounds
     bx0, by0, bx1, by1 = bounds
     tol = 1.5 * grid.cell_size
     r, c = cell
     sides = []
-    if c == 0:
-        sides.append(gx0 - bx0)
-    if c == cols - 1:
-        sides.append(bx1 - gx1)
-    if r == 0:
-        sides.append(by1 - gy1)
-    if r == rows - 1:
-        sides.append(gy0 - by0)
-    return any(gap <= tol for gap in sides)
+    if c == 0 and gx0 - bx0 <= tol:
+        sides.append('w')
+    if c == cols - 1 and bx1 - gx1 <= tol:
+        sides.append('e')
+    if r == 0 and by1 - gy1 <= tol:
+        sides.append('n')
+    if r == rows - 1 and gy0 - by0 <= tol:
+        sides.append('s')
+    return sides
 
 
 def _lowest(grid, cells):

@@ -12,6 +12,7 @@ from qgis.core import (QgsColorRampShader, QgsCoordinateReferenceSystem,
                        QgsStyle, QgsVectorFileWriter, QgsVectorLayer)
 
 from ..core import terrain
+from ..core.i18n import tr
 from . import theme
 
 RES_FIELDS = [('level_m', 'double'), ('area_km2', 'double'), ('volume_mm3', 'double'),
@@ -39,7 +40,8 @@ def _r(v, d=3):
 
 
 def reservoir_layer(res, name=None):
-    lyr = _memory_layer('MultiPolygon', name or 'Reservoir {:.1f} m'.format(res.water_level),
+    lyr = _memory_layer('MultiPolygon',
+                        name or tr('Reservoir {:.1f} m a.s.l.').format(res.water_level),
                         result_crs(res), RES_FIELDS)
     if res.polygon_wkt:
         f = QgsFeature(lyr.fields())
@@ -54,8 +56,8 @@ def reservoir_layer(res, name=None):
     return lyr
 
 
-def line_layer(res, name='Dam line'):
-    lyr = _memory_layer('LineString', name, result_crs(res), LINE_FIELDS)
+def line_layer(res, name=None):
+    lyr = _memory_layer('LineString', name or tr('Dam line'), result_crs(res), LINE_FIELDS)
     f = QgsFeature(lyr.fields())
     f.setGeometry(QgsGeometry.fromPolylineXY([QgsPointXY(x, y) for x, y in res.line_coords]))
     f.setAttributes([_r(res.end_levels[0], 2), _r(res.end_levels[1], 2),
@@ -67,8 +69,8 @@ def line_layer(res, name='Dam line'):
     return lyr
 
 
-def table_layer(res, name='Elevation-area-volume'):
-    lyr = _memory_layer('None', name, None, TABLE_FIELDS)
+def table_layer(res, name=None):
+    lyr = _memory_layer('None', name or tr('Elevation-area-volume'), None, TABLE_FIELDS)
     lv, a, v = res.curve()
     feats = []
     for h, aa, vv in zip(lv, a, v):
@@ -85,7 +87,7 @@ def depth_raster(res, path=None):
         fd, path = tempfile.mkstemp(prefix='reservoir_depth_', suffix='.tif')
         os.close(fd)
     terrain.write_geotiff(path, res.grid, res.depth_array())
-    lyr = QgsRasterLayer(path, 'Water depth')
+    lyr = QgsRasterLayer(path, tr('Water depth'))
     ramp = QgsStyle.defaultStyle().colorRamp('Blues')
     top = max(res.max_depth, 0.1)
     fn = QgsColorRampShader(0.0, top, ramp, QgsColorRampShader.Type.Interpolated)
@@ -104,7 +106,7 @@ def add_to_project(res):
     """Add the reservoir outline, the line and the depth grid in a new group."""
     project = QgsProject.instance()
     group = project.layerTreeRoot().insertGroup(
-        0, 'Reservoir {:.1f} m'.format(res.water_level))
+        0, tr('Reservoir {:.1f} m a.s.l.').format(res.water_level))
     layers = [line_layer(res), reservoir_layer(res), depth_raster(res)]
     for lyr in layers:
         project.addMapLayer(lyr, False)
@@ -144,7 +146,7 @@ def write_geopackage(res, path):
 
 def table_text(res):
     lv, a, v = res.curve()
-    rows = ['Water level (m)\tArea (km²)\tVolume (million m³)']
+    rows = [tr('Water level (m a.s.l.)\tArea (km²)\tVolume (million m³)')]
     for h, aa, vv in zip(lv, a, v):
         rows.append('{:.2f}\t{:.4f}\t{:.4f}'.format(h, aa / 1e6, vv / 1e6))
     return '\n'.join(rows)

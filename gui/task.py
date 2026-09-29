@@ -49,17 +49,38 @@ def dem_cache_dir():
 
 
 class _Feedback(analysis.Feedback):
+    """Called from worker threads, so it never raises: an exception there would
+    reach QGIS's error hook, which opens a dialog off the GUI thread and crashes
+    QGIS.  If the task object is already gone the run is treated as cancelled."""
+
     def __init__(self, task):
         self.task = task
 
     def set_progress(self, percent):
-        self.task.setProgress(float(percent))
+        try:
+            self.task.setProgress(float(percent))
+        except RuntimeError:        # the task's C++ object was deleted
+            pass
 
     def set_status(self, text):
-        self.task.message.emit(text)
+        try:
+            self.task.message.emit(str(text))
+        except RuntimeError:
+            pass
 
     def is_cancelled(self):
-        return self.task.isCanceled()
+        try:
+            return self.task.isCanceled()
+        except RuntimeError:
+            return True
+
+    def log(self, text):
+        # View > Panels > Log Messages > "Reservoir Creator" tab
+        try:
+            QgsMessageLog.logMessage(str(text), LOG_TAG, Qgis.MessageLevel.Info,
+                                     notifyUser=False)
+        except RuntimeError:
+            pass
 
 
 class ReservoirTask(QgsTask):
@@ -77,6 +98,7 @@ class ReservoirTask(QgsTask):
         self.error = None
         self.downloaded_path = None
         self.download_notes = []
+        self.run_id = 0          # set by the panel; results of an outdated run are dropped
 
     def run(self):
         fb = _Feedback(self)
@@ -94,20 +116,15 @@ class ReservoirTask(QgsTask):
         return False
 
     def _download(self, bounds, work, fb):
-        key = '{}|{}|{}'.format(self.download_source, work.ExportToWkt(),
-                                ','.join('{:.0f}'.format(b) for b in bounds))
-        digest = hashlib.sha1(key.encode('utf-8')).hexdigest()[:12]
-        out = os.path.join(self.cache_dir, '{}_{}.tif'.format(self.download_source, digest))
-        if not os.path.exists(out):
-            tmp = out + '.part.tif'
-            try:
-                _p, notes = dem_sources.download_dem(
-                    self.download_source, bounds, work, tmp, fetch_text=qgis_fetch_text,
-                    feedback=fb, extra_gdal_config=self.gdal_config)
-                os.replace(tmp, out)
-                self.download_notes = notes
-            finally:
-                if os.path.exists(tmp):          # cancelled or failed: no partial file
-                    os.remove(tmp)
-        self.downloaded_path = out
-        return out
+        """DEM mosaic for the window: cached tiles, downloading only the missing ones."""
+        vrt, notes, n_tiles, n_new = dem_sources.fetch_tiles(
+            self.download_source, bounds, work, self.cache_dir, fetch_text=qgis_fetch_text,
+            feedback=fb, extra_gdal_config=self.gdal_config)
+        fb.log('    {} window {:.0f} x {:.0f} km: {} tiles, {} downloaded, {} from cache'.format(
+            self.download_source, (bounds[2] - bounds[0]) / 1000.0,
+            (bounds[3] - bounds[1]) / 1000.0, n_tiles, n_new, n_tiles - n_new))
+        for n in notes:
+            if n not in self.download_notes:
+                self.download_notes.append(n)
+        self.downloaded_path = vrt
+        return vrt

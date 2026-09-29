@@ -1,11 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <!-- reservoir water -->
-  <path d="M5 21 H36.2 L32 55 H5 Z" fill="#2a78d6"/>
-  <path d="M8 29 q3.5 -3 7 0 t7 0 t7 0" fill="none" stroke="#cde2fb" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M8 38 q3.5 -3 7 0 t7 0" fill="none" stroke="#86b6ef" stroke-width="2.6" stroke-linecap="round"/>
-  <!-- embankment -->
-  <path d="M37 13 H45 L60 55 H32 Z" fill="#eb6834"/>
-  <path d="M37 13 H45" stroke="#c4501f" stroke-width="2" stroke-linecap="round"/>
-  <!-- ground -->
-  <path d="M3 57 H61" stroke="#52514e" stroke-width="4" stroke-linecap="round"/>
+  <!-- A reservoir held by a gravity dam, on the plugin's action gradient
+       (azure to royal blue), with soft light water and a white dam. -->
+  <defs>
+    <linearGradient id="bg" x1="4" y1="4" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3a84f7"/>
+      <stop offset="1" stop-color="#2f4de6"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="28" x2="0" y2="51" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e3ecff"/>
+      <stop offset="1" stop-color="#b8cbfb"/>
+    </linearGradient>
+    <linearGradient id="dam" x1="0" y1="15" x2="0" y2="51" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e4e8f1"/>
+    </linearGradient>
+  </defs>
+  <!-- tile -->
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bg)"/>
+  <!-- valley sides -->
+  <path d="M5 32 L13 21.5 L21.5 27 L28.5 20.5 L37 28.5 V51 H5 Z" fill="#ffffff" opacity="0.12"/>
+  <!-- reservoir behind the dam -->
+  <path d="M7 30 C11 27.6 15 27.6 19 30 S27 32.4 31 30 L36 30 V51 H7 Z" fill="url(#water)"/>
+  <path d="M10.5 37.5 C13.5 35.8 16.5 35.8 19.5 37.5 S25.5 39.2 28.5 37.5" fill="none"
+        stroke="#3a6fe8" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+  <path d="M13 44 C15.5 42.7 18 42.7 20.5 44" fill="none"
+        stroke="#3a6fe8" stroke-width="1.8" stroke-linecap="round" opacity="0.3"/>
+  <!-- gravity dam: vertical upstream face, curved downstream face -->
+  <path d="M35.5 15.5 H42 C43.5 28 47.5 41 56.5 51 H35.5 Z" fill="url(#dam)"/>
+  <!-- foundation -->
+  <rect x="5.5" y="50" width="53" height="4.2" rx="2.1" fill="#ffffff" opacity="0.95"/>
 </svg>

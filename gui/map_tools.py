@@ -13,6 +13,8 @@ from qgis.gui import QgsMapTool, QgsRubberBand, QgsSnapIndicator
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QCursor
 
+from ..core.i18n import tr
+
 
 class DamAxisTool(QgsMapTool):
     axisCompleted = pyqtSignal(QgsGeometry)
@@ -68,8 +70,8 @@ class DamAxisTool(QgsMapTool):
         p = self._snapped(event)
         if self.points:
             self._redraw(p)
-            self.status.emit('Line: {:,.0f} m · {} points - right-click to finish, '
-                             'Backspace to undo, Esc to cancel'
+            self.status.emit(tr('Line: {:,.0f} m · {} points - right-click to finish, '
+                                'Backspace to undo, Esc to cancel')
                              .format(self._length(self.points + [p]), len(self.points) + 1))
 
     def canvasReleaseEvent(self, event):
@@ -89,7 +91,7 @@ class DamAxisTool(QgsMapTool):
         if key == Qt.Key.Key_Escape:
             self.reset()
             self.cancelled.emit()
-            self.status.emit('Drawing cancelled.')
+            self.status.emit(tr('Drawing cancelled.'))
         elif key in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete) and self.points:
             self.points.pop()
             self._redraw()
@@ -102,7 +104,7 @@ class DamAxisTool(QgsMapTool):
             if not pts or p.distance(pts[-1]) > 0:
                 pts.append(p)
         if len(pts) < 2:
-            self.status.emit('Click at least two points across the valley.')
+            self.status.emit(tr('Click at least two points across the valley.'))
             return
         geom = QgsGeometry.fromPolylineXY(pts)
         self.reset()

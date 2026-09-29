@@ -3,12 +3,12 @@ name=Reservoir Creator
 qgisMinimumVersion=3.34
 qgisMaximumVersion=4.99
 supportsQt6=True
-description=Draw a line across a valley and get the reservoir behind it: flooded area, volume and elevation-area-volume curve from a DEM.
+description=Draw a line across a valley and get the reservoir behind it: water level, volume, surface area and elevation-area-volume curves from a DEM.
 version=2.0.0
 author=Faruk Gurbuz
 email=gurbuz2561@gmail.com
 
-about=Draw a line across a valley (or pick a line layer). The water level is the ground height at the lower end of the line, and the reservoir is everything behind the line that is connected to it and below that level, computed from the DEM alone. The panel shows the water level, volume, surface area, maximum depth, the elevation-area-volume curve and the ground profile of the line, and draws the reservoir on the map. The DEM can be a project layer or downloaded for the area around the line only (GEDTM30 bare-earth DTM or Copernicus GLO-30), with cancel at any time. Results can be added to the map or exported (GeoPackage, GeoTIFF, CSV, PNG). Requires matplotlib (bundled with QGIS on Windows and macOS).
+about=Draw a line across a valley (or pick a line layer). The water level (m above mean sea level) is the ground height at the lower end of the line, optionally limited by a design maximum water level or maximum depth, and the reservoir is everything behind the line that is connected to it and below that level, computed from the DEM at full resolution. The panel shows the stored volume, water level, surface area and maximum depth, the elevation-area-volume curves, the ground profile along the line and a table, and draws the reservoir on the map. The DEM can be a project layer or downloaded (GEDTM30 bare-earth DTM or Copernicus GLO-30) in cached tiles for the area the reservoir needs. Results can be added to the map or exported (GeoPackage, GeoTIFF, CSV, PNG). English and Turkish interface, light and dark theme. Requires matplotlib (bundled with QGIS on Windows and macOS).
 
 tracker=https://github.com/gurbuzf/reservoir_creator/issues
 repository=https://github.com/gurbuzf/reservoir_creator
@@ -23,6 +23,13 @@ changelog=
     - DEM download for the area around the line (GEDTM30, Copernicus GLO-30), cancellable
     - Dockable panel with interactive area-volume curve and line profile; results added to the map or exported
     - Runs in the background; QGIS 3.34 LTR to QGIS 4 (Qt5 and Qt6)
+    - Full DEM resolution by default; optional Fast mode for very large areas
+    - Optional design limit: maximum water level (m a.s.l.) or maximum depth above the riverbed
+    - Analysis window grows only towards the reservoir; downloads in cached tiles (fast re-runs)
+    - Nothing is computed until "Create reservoir" is pressed; "Start over" resets the panel
+    - Engineering elevation-area-volume chart; smooth hover; report-ready PNG export
+    - Separate window with a Dock button; light / dark theme; English and Turkish
+    - References and Guide pages; step timings in the QGIS log panel
     1.0.0
     - First experimental release
 
