@@ -1,28 +1,36 @@
 [general]
 name=Reservoir Creator
-qgisMinimumVersion=3.0
-description=This plugin calculates elevation-area-storage relationship of a dam placed on a water course.
-version=1.0.0
+qgisMinimumVersion=3.34
+qgisMaximumVersion=4.99
+supportsQt6=True
+description=Elevation-area-capacity curves, inundated area and dam sizing for a dam axis drawn on a DEM.
+version=2.0.0
 author=Faruk Gurbuz
 email=gurbuz2561@gmail.com
 
-about=This tool takes advantage of existing processing algorithms that come with QGIS to obtain and visualize elevation-area-storage relationship of a hypothetical dam/embankment on a water-course. It also automatically creates a polygon for the inundated area by the dam and extracts corresponding Digital Elevation Model (DEM). 
+about=Draw a dam axis across a valley (or pick a line layer) and Reservoir Creator computes the reservoir it would impound directly from a digital elevation model - no contour lines needed. A priority flood from the upstream face of the dam gives the exact elevation-area-capacity relationship, the maximum impoundable level (where water would bypass the dam or spill over a saddle), the water surface and water-depth grid at any level, and planning indicators: dam height, crest length, indicative embankment fill, storage-to-fill ratio, mean and maximum depth, reservoir length, shoreline development, dead/live storage and, with a mean inflow, residence time and Brune sediment trap efficiency. Elevation data can come from a project layer or be downloaded on the fly for the dam area only: GEDTM30 (global bare-earth DTM, OpenGeoHub, CC-BY 4.0) or Copernicus GLO-30. Results are shown in a dockable panel with interactive charts and can be exported to GeoPackage, GeoTIFF and CSV. Requires matplotlib (bundled with QGIS on Windows and macOS).
 
 tracker=https://github.com/gurbuzf/reservoir_creator/issues
 repository=https://github.com/gurbuzf/reservoir_creator
+homepage=https://github.com/gurbuzf/reservoir_creator
 
 hasProcessingProvider=no
-# Uncomment the following line and add your changelog:
-# changelog=
+changelog=
+    2.0.0
+    - Complete rewrite: DEM-only priority-flood method (no contour layer needed); hollows that are not connected to the reservoir are no longer counted
+    - Maximum impoundable level with bypass / saddle / DEM-edge diagnosis and spill point on the map
+    - Automatic upstream-side detection and automatic metric working CRS (any DEM CRS, including geographic)
+    - Draw the dam axis directly on the map, or use a line layer
+    - DEM download for the dam area: GEDTM30 (bare-earth DTM, via Zenodo) and Copernicus GLO-30
+    - Dockable panel with interactive area-capacity, dam-axis section and dam-sizing charts, water-level slider with live flood extent
+    - Planning indicators: dam height, crest length, embankment fill, storage/fill ratio, depths, reservoir length, shoreline index, dead/live storage, residence time, trap efficiency
+    - Exports: GeoPackage, water-depth GeoTIFF, CSV table, chart images
+    - Runs in the background; QGIS 3.34 LTR to QGIS 4 (Qt5 and Qt6)
+    1.0.0
+    - First experimental release
 
-tags=python, reservoir, elevation-storage
-
-homepage=http://homepage
+tags=hydrology,reservoir,dam,dem,dtm,water,storage,elevation-area-capacity,flood,hydropower,water resources
 category=Plugins
-icon=icon.png
-# experimental flag
+icon=icons/icon.png
 experimental=True
-
-# deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
-

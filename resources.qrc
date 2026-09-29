@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/reservoir_creator" >
-        <file>icon.png</file>
-    </qresource>
-</RCC>

@@ -148,4 +148,6 @@ pylintrc
 compile.bat
 help/
 pb_tool.cfg
-test/
+build/
+# GDAL side-car statistics
+*.aux.xml

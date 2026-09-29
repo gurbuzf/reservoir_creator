@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- reservoir water -->
+  <path d="M5 21 H36.2 L32 55 H5 Z" fill="#2a78d6"/>
+  <path d="M8 29 q3.5 -3 7 0 t7 0 t7 0" fill="none" stroke="#cde2fb" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M8 38 q3.5 -3 7 0 t7 0" fill="none" stroke="#86b6ef" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- embankment -->
+  <path d="M37 13 H45 L60 55 H32 Z" fill="#eb6834"/>
+  <path d="M37 13 H45" stroke="#c4501f" stroke-width="2" stroke-linecap="round"/>
+  <!-- ground -->
+  <path d="M3 57 H61" stroke="#52514e" stroke-width="4" stroke-linecap="round"/>
+</svg>
