@@ -346,6 +346,33 @@ dock.page_switch.set_index(0)
 assert dock.action_bar.isVisible()
 print('references + guide OK')
 
+def save_doc_shots(suffix):
+    """Documentation images: each panel card, the exported charts and the full panel."""
+    from qgis.PyQt.QtCore import QPoint, QRect  # noqa: E402
+    from qgis.PyQt.QtWidgets import QFrame  # noqa: E402
+    dock.use_max_level.setChecked(False)    # a clean result, without earlier test limits
+    dock.run_btn.click()
+    wait_task(dock)
+    dock.setFloating(True)
+    dock.resize(440, 1800)
+    dock.page_switch.set_index(0)
+    dock.chart_tabs.setCurrentIndex(0)
+    page = dock.scroll.widget()
+    page.resize(dock.scroll.viewport().width(), page.sizeHint().height())
+    app.processEvents()
+    cards = [w for w in page.findChildren(QFrame) if w.objectName() == 'rcCard']
+    cards[0].grab().save(os.path.join(OUT, 'crop_line%s.png' % suffix))
+    cards[1].grab().save(os.path.join(OUT, 'crop_dem%s.png' % suffix))
+    res = dock.results
+    top = dock.view_switch.mapTo(res, QPoint(0, 0)).y() - 8
+    res.grab(QRect(0, 0, res.width(), top)).save(os.path.join(OUT, 'crop_results%s.png' % suffix))
+    dock.curve_chart.save_png(os.path.join(OUT, 'chart_curve%s.png' % suffix))
+    dock.profile_chart.save_png(os.path.join(OUT, 'chart_profile%s.png' % suffix))
+    dock.widget().grab().save(os.path.join(OUT, 'panel_full%s.png' % suffix))
+
+
+save_doc_shots('')
+
 # theme and language rebuild the panel and keep the result
 theme_mod = __import__(PKG + '.gui.theme', fromlist=['x'])
 dock.set_theme('dark')
@@ -366,6 +393,9 @@ for i in range(2):
     app.processEvents()
     dock.widget().grab().save(os.path.join(OUT, 'panel_tr_dark_%d.png' % i))
 dock.chart_tabs.setCurrentIndex(0)
+dock.set_theme('auto')              # Turkish documentation images, default theme
+app.processEvents()
+save_doc_shots('_tr')
 dock.set_language('en')
 dock.set_theme('light')
 app.processEvents()

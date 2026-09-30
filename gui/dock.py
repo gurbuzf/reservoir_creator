@@ -38,7 +38,6 @@ except Exception:  # pragma: no cover - matplotlib missing
 SETTINGS = 'ReservoirCreator/'
 REPO_URL = 'https://github.com/gurbuzf/reservoir_creator'
 DOCS_URL = 'https://gurbuzf.github.io/reservoir_creator/'
-HELP_URL = DOCS_URL + 'guide.html'
 ISSUES_URL = REPO_URL + '/issues'
 RIGHT_ALIGN = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
 LIMIT_LEVEL, LIMIT_DEPTH = 0, 1
@@ -230,6 +229,11 @@ class ReservoirDock(QgsDockWidget):
         return lab
 
     @staticmethod
+    def _docs(page=''):
+        """Documentation site URL in the interface language (Turkish pages live in tr/)."""
+        return DOCS_URL + ('tr/' if language() == 'tr' else '') + page
+
+    @staticmethod
     def _link(text, url):
         return '<a href="{}">{}</a>'.format(url, text)
 
@@ -253,7 +257,7 @@ class ReservoirDock(QgsDockWidget):
         plugin.body.addWidget(self._rich(' &nbsp;·&nbsp; '.join((
             self._link(tr('GitHub repository'), REPO_URL),
             self._link(tr('Report an issue'), ISSUES_URL),
-            self._link(tr('Documentation'), DOCS_URL)))))
+            self._link(tr('Documentation'), self._docs())))))
 
         data = Card(tr('Elevation data'),
                     tr('Please cite the elevation data you use in your work.'))
@@ -314,7 +318,7 @@ class ReservoirDock(QgsDockWidget):
                    'the ⚙ menu.'),
                 tr('Step timings are written to View ▸ Panels ▸ Log Messages, tab "Reservoir '
                    'Creator".'))))))
-        tips.body.addWidget(self._rich(self._link(tr('Full documentation'), DOCS_URL)))
+        tips.body.addWidget(self._rich(self._link(tr('Full documentation'), self._docs())))
         return [guide, tips]
 
     def _settings_button(self):
@@ -340,7 +344,7 @@ class ReservoirDock(QgsDockWidget):
             a.triggered.connect(lambda _c=False, c=code: self.set_language(c))
         menu.addSeparator()
         menu.addAction(_icon('/mActionHelpContents.svg'), tr('Documentation')).triggered.connect(
-            lambda: QDesktopServices.openUrl(QUrl(HELP_URL)))
+            lambda: QDesktopServices.openUrl(QUrl(self._docs('guide.html'))))
         btn.setMenu(menu)
         btn.setStyleSheet('QToolButton::menu-indicator { image: none; width: 0; }')
         return btn

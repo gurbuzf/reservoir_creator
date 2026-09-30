@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservoir Creator · Doğrulama</title>
+<meta name="description" content="Reservoir Creator, kesin ve gerçek sonuçlarla karşılaştırıldı.">
+<link rel="alternate" hreflang="en" href="../validation.html">
+<link rel="alternate" hreflang="tr" href="validation.html">
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+  <a class="brand" href="index.html"><img src="../assets/logo.svg" alt=""><span>Reservoir Creator</span></a>
+  <nav class="nav"><a href="index.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Ana sayfa</span></a><a href="getting-started.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg><span>Başlarken</span></a><a href="guide.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 1h13"/></svg><span>Kullanım kılavuzu</span></a><a href="how-it-works.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg><span>Nasıl çalışır</span></a><a href="validation.html" class="active"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span>Doğrulama</span></a><a href="about.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>Hakkında</span></a></nav>
+  <div class="lang"><a href="../validation.html" hreflang="en">EN</a><a href="validation.html" hreflang="tr" class="on">TR</a></div>
+  <div class="foot"><a href="https://github.com/gurbuzf/reservoir_creator"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5M15 21v-3.5a3 3 0 0 0-.9-2.4c3-.3 6-1.4 6-6.6a5 5 0 0 0-1.4-3.6 4.7 4.7 0 0 0-.1-3.6s-1.1-.3-3.7 1.4a12.7 12.7 0 0 0-6.6 0C5.7 1 4.6 1.3 4.6 1.3a4.7 4.7 0 0 0-.1 3.6A5 5 0 0 0 3 8.5c0 5.2 3 6.3 6 6.6a3 3 0 0 0-.9 2.3V21"/></svg>GitHub</a></div>
+</aside>
+<main class="page">
+<div class="kicker">Doğrulama</div>
+<h1>Doğru hesaplıyor mu?</h1>
+<p class="sub">Üç kontrol.</p>
+
+<h2>1 · Kesin formül</h2>
+<div class="row">
+  <p>V biçimli bir vadinin hacmi kesin olarak bilinir. Testler %3 içinde uyum ister.</p>
+  <div class="formula">V = D³ / (3 g s)</div>
+</div>
+
+<h2>2 · Gerçek göl</h2>
+<div class="pair" style="margin-top:22px">
+  <figure><img class="frame" src="../images/map.jpg" alt="Hesaplanan"><figcaption>Hesaplanan (barajdan önceki DEM)</figcaption></figure>
+  <figure><img class="frame" src="../images/validation_satellite.jpg" alt="Uydu"><figcaption>Uydu görüntüsü</figcaption></figure>
+</div>
+
+<h2>3 · Ilısu Barajı</h2>
+<p>GEDTM30, tam çözünürlük, 525 m kotunda.</p>
+<table>
+  <tr><th></th><th class="n">Eklenti</th><th class="n">Yayımlanan</th><th class="n">Fark</th></tr>
+  <tr><td>Hacim</td><td class="n">10 508 hm³</td><td class="n">10 410 hm³</td><td class="n good">%0,9</td></tr>
+  <tr><td>Alan</td><td class="n">310,1 km²</td><td class="n">313 km²</td><td class="n good">%0,9</td></tr>
+</table>
+<div class="note"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>Küresel 30 m DEM'ler etütler için uygundur. Tasarım için yerel bir ölçüm DTM'i kullanın.</span></div>
+<div class="pager"><a href="how-it-works.html"><small>← Önceki</small>Nasıl çalışır</a><a class="next" href="about.html"><small>Sonraki →</small>Hakkında</a></div>
+<p class="legal">Reservoir Creator · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</p>
+</main>
+</div>
+</body>
+</html>

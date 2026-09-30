@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservoir Creator · Kullanım kılavuzu</title>
+<meta name="description" content="Reservoir Creator paneli, adım adım.">
+<link rel="alternate" hreflang="en" href="../guide.html">
+<link rel="alternate" hreflang="tr" href="guide.html">
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+  <a class="brand" href="index.html"><img src="../assets/logo.svg" alt=""><span>Reservoir Creator</span></a>
+  <nav class="nav"><a href="index.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Ana sayfa</span></a><a href="getting-started.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg><span>Başlarken</span></a><a href="guide.html" class="active"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 1h13"/></svg><span>Kullanım kılavuzu</span></a><a href="how-it-works.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg><span>Nasıl çalışır</span></a><a href="validation.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span>Doğrulama</span></a><a href="about.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>Hakkında</span></a></nav>
+  <div class="lang"><a href="../guide.html" hreflang="en">EN</a><a href="guide.html" hreflang="tr" class="on">TR</a></div>
+  <div class="foot"><a href="https://github.com/gurbuzf/reservoir_creator"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5M15 21v-3.5a3 3 0 0 0-.9-2.4c3-.3 6-1.4 6-6.6a5 5 0 0 0-1.4-3.6 4.7 4.7 0 0 0-.1-3.6s-1.1-.3-3.7 1.4a12.7 12.7 0 0 0-6.6 0C5.7 1 4.6 1.3 4.6 1.3a4.7 4.7 0 0 0-.1 3.6A5 5 0 0 0 3 8.5c0 5.2 3 6.3 6 6.6a3 3 0 0 0-.9 2.3V21"/></svg>GitHub</a></div>
+</aside>
+<main class="page">
+<div class="kicker">Kullanım kılavuzu</div>
+<h1>Panel</h1>
+<p class="sub">Yukarıdan aşağıya üç adım.</p>
+
+<h2>1 · Baraj ekseni</h2>
+<div class="row">
+  <div><ul class="list">
+    <li>Vadi boyunca tıklayın, bitirmek için sağ tıklayın.</li>
+    <li>Ya da bir katmandan çizgi alın.</li>
+    <li>İsteğe bağlı sınır: maksimum su kotu veya derinlik.</li>
+  </ul>
+  <div class="note"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg><span>Su kotu = çizginin <b>alçak ucundaki</b> zemin kotu.</span></div></div>
+  <img class="frame" src="../images/crop_line_tr.png" alt="Baraj ekseni bölümü">
+</div>
+
+<h2>2 · Yükseklik verisi</h2>
+<div class="row flip">
+  <div><ul class="list">
+    <li><b>Proje katmanı</b>: kendi DEM'iniz (en iyisi).</li>
+    <li><b>GEDTM30</b>: küresel çıplak arazi, 30 m.</li>
+    <li><b>Copernicus</b>: küresel yüzey modeli, 30 m.</li>
+  </ul><p class="muted">İndirmeler önbelleğe alınır. Hızlı modu seçmediğiniz sürece tam çözünürlük.</p></div>
+  <img class="frame" src="../images/crop_dem_tr.png" alt="Yükseklik verisi bölümü">
+</div>
+
+<h2>3 · Sonuçlar</h2>
+<div class="row">
+  <div><ul class="list">
+    <li>Hacim, su kotu, alan, derinlik.</li>
+    <li>Eğriler, profil ve tablo. Değerler için imleci gezdirin.</li>
+    <li>Haritaya ekleyin ya da dışa aktarın.</li>
+  </ul></div>
+  <img class="frame" src="../images/crop_results_tr.png" alt="Sonuçlar bölümü">
+</div>
+<div class="pair" style="margin-top:22px">
+  <figure><img class="frame" src="../images/chart_curve_tr.png" alt="Kot-alan-hacim grafiği"><figcaption>Kot-Alan-Hacim</figcaption></figure>
+  <figure><img class="frame" src="../images/chart_profile_tr.png" alt="Profil grafiği"><figcaption>Profil</figcaption></figure>
+</div>
+
+<h2>Kullanışlı</h2>
+<div class="cards">
+  <div class="card"><div class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/></svg></div><h3>⚙ Ayarlar</h3><p>Açık / koyu · English / Türkçe</p></div>
+  <div class="card"><div class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg></div><h3>⇄ Tarafı değiştir</h3><p>Su mansapta görünürse</p></div>
+  <div class="card"><div class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 16h16M10 4v16M16 4v16"/></svg></div><h3>Yerleştir</h3><p>Ayrı pencere ya da panel</p></div>
+</div>
+<div class="pager"><a href="getting-started.html"><small>← Önceki</small>Başlarken</a><a class="next" href="how-it-works.html"><small>Sonraki →</small>Nasıl çalışır</a></div>
+<p class="legal">Reservoir Creator · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</p>
+</main>
+</div>
+</body>
+</html>

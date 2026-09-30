@@ -6,7 +6,8 @@ Draw a line across a valley and see the reservoir behind it: stored volume,
 water level, surface area, maximum depth and the elevation–area–volume curves,
 computed from a DEM.
 
-**📖 Documentation: <https://gurbuzf.github.io/reservoir_creator/>**
+**📖 Documentation: <https://gurbuzf.github.io/reservoir_creator/>** ·
+[Türkçe](https://gurbuzf.github.io/reservoir_creator/tr/)
 
 <p align="center">
   <img src="docs/images/panel_curve.png" width="260" alt="Reservoir Creator panel">
