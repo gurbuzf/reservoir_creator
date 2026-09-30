@@ -24,6 +24,7 @@ from ..core import analysis, dem_sources, terrain
 from ..core.analysis import Note
 from ..core.i18n import LANGUAGES, Msg, language, set_language, tr
 from . import outputs, theme
+from .compat import geometry_type
 from .map_tools import DamAxisTool
 from .task import ReservoirTask
 from .widgets import (Banner, Card, ResultHero, Segmented, hint, icon_button, pill_button,
@@ -769,7 +770,7 @@ class ReservoirDock(QgsDockWidget):
             self.line_info.setText(tr('No line yet.'))
             return
         geom = QgsGeometry.fromPolylineXY([QgsPointXY(x, y) for x, y in pts])
-        self.line_band = QgsRubberBand(self.canvas, Qgis.GeometryType.Line)
+        self.line_band = QgsRubberBand(self.canvas, geometry_type('Line'))
         self.line_band.setColor(QColor(theme.LIGHT['dam']))
         self.line_band.setWidth(4)
         self.line_band.setToGeometry(geom, crs)
@@ -935,7 +936,7 @@ class ReservoirDock(QgsDockWidget):
         self._clear_overlays()
         crs = outputs.result_crs(r)
         if r.polygon_wkt:
-            self.water_band = QgsRubberBand(self.canvas, Qgis.GeometryType.Polygon)
+            self.water_band = QgsRubberBand(self.canvas, geometry_type('Polygon'))
             c = QColor(theme.LIGHT['storage'])
             self.water_band.setStrokeColor(c)
             c.setAlpha(80)

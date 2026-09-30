@@ -7,13 +7,14 @@
 * Esc             - cancel
 """
 
-from qgis.core import (Qgis, QgsDistanceArea, QgsGeometry, QgsPointLocator, QgsPointXY,
+from qgis.core import (QgsDistanceArea, QgsGeometry, QgsPointLocator, QgsPointXY,
                        QgsProject)
 from qgis.gui import QgsMapTool, QgsRubberBand, QgsSnapIndicator
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QCursor
 
 from ..core.i18n import tr
+from .compat import geometry_type
 
 
 class DamAxisTool(QgsMapTool):
@@ -33,7 +34,7 @@ class DamAxisTool(QgsMapTool):
     # -- rubber band ------------------------------------------------------------
     def _ensure_band(self):
         if self.band is None:
-            self.band = QgsRubberBand(self.canvas_, Qgis.GeometryType.Line)
+            self.band = QgsRubberBand(self.canvas_, geometry_type('Line'))
             self.band.setColor(self.color)
             self.band.setWidth(3)
             self.band.setLineStyle(Qt.PenStyle.DashLine)

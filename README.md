@@ -22,7 +22,7 @@ computed from a DEM.
 * Your own DEM, or GEDTM30 / Copernicus GLO-30 downloaded in cached tiles
 * Engineering elevation–area–volume chart, profile, table; GeoPackage, GeoTIFF,
   CSV and PNG exports
-* QGIS 3.34 LTR to 4.x (Qt5 and Qt6) · English and Turkish · light and dark
+* QGIS 3.28 to 4.x (Qt5 and Qt6) · English and Turkish · light and dark
 
 ## Install
 
