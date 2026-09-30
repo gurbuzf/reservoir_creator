@@ -3,170 +3,85 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>How it works · Reservoir Creator</title>
+<title>Reservoir Creator · How it works</title>
 <meta name="description" content="How Reservoir Creator computes a reservoir from a DEM.">
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<header class="topbar"><div class="inner">
-  <a class="brand" href="index.html"><img src="assets/logo.svg" alt="">Reservoir Creator</a>
-  <nav class="nav"><a href="index.html">Home</a><a href="getting-started.html">Get started</a><a href="guide.html">User guide</a><a href="how-it-works.html" class="active">How it works</a><a href="validation.html">Validation</a><a href="about.html">About</a></nav>
-</div></header>
-<main>
-<div class="narrow">
-<div class="eyebrow">How it works</div>
+<div class="shell">
+<aside class="side">
+  <a class="brand" href="index.html"><img src="assets/logo.svg" alt=""><span>Reservoir Creator</span></a>
+  <nav class="nav"><a href="index.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a><a href="getting-started.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg><span>Get started</span></a><a href="guide.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 1h13"/></svg><span>User guide</span></a><a href="how-it-works.html" class="active"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg><span>How it works</span></a><a href="validation.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span>Validation</span></a><a href="about.html"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>About</span></a></nav>
+  <div class="foot"><a href="https://github.com/gurbuzf/reservoir_creator"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5M15 21v-3.5a3 3 0 0 0-.9-2.4c3-.3 6-1.4 6-6.6a5 5 0 0 0-1.4-3.6 4.7 4.7 0 0 0-.1-3.6s-1.1-.3-3.7 1.4a12.7 12.7 0 0 0-6.6 0C5.7 1 4.6 1.3 4.6 1.3a4.7 4.7 0 0 0-.1 3.6A5 5 0 0 0 3 8.5c0 5.2 3 6.3 6 6.6a3 3 0 0 0-.9 2.3V21"/></svg>GitHub</a></div>
+</aside>
+<main class="page">
+<div class="kicker">How it works</div>
 <h1>From a line to a reservoir</h1>
-<p class="lead">Everything comes from the DEM. No contour layer, no other parameters.</p>
-</div>
-
-<h2>The whole process</h2>
-<div class="flow">
-<svg viewBox="0 0 780 1040" width="780" role="img" aria-label="Flowchart of the computation">
+<p class="sub">Everything comes from the DEM.</p>
+<div class="chart">
+<svg viewBox="0 0 720 716" width="720" role="img" aria-label="How a reservoir is computed">
   <defs>
-    <linearGradient id="fcgrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#3a84f7"/><stop offset="1" stop-color="#2f4de6"/></linearGradient>
-    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#8a919c"/></marker>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a84f7"/><stop offset="1" stop-color="#2f4de6"/></linearGradient>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker>
   </defs>
-  <text class="fc-head" x="210" y="22">YOU</text>
-  <rect class="fc-user" x="210" y="34" width="300" height="58" rx="12"/>
-  <text class="fc-t" x="360" y="60" text-anchor="middle">Draw the dam line</text>
-  <text class="fc-s" x="360" y="79" text-anchor="middle">on the map, or from a line layer</text>
-  <path class="fc-arrow" d="M360 92 V116" marker-end="url(#ah)"/>
-  <rect class="fc-user" x="210" y="118" width="300" height="58" rx="12"/>
-  <text class="fc-t" x="360" y="144" text-anchor="middle">Choose the elevation data</text>
-  <text class="fc-s" x="360" y="163" text-anchor="middle">project DEM or download · optional limit</text>
-  <path class="fc-arrow" d="M360 176 V200" marker-end="url(#ah)"/>
-  <rect class="fc-key" x="210" y="202" width="300" height="58" rx="12"/>
-  <text class="fc-w" x="360" y="236" text-anchor="middle">Create reservoir</text>
-  <path class="fc-arrow" d="M360 260 V306" marker-end="url(#ah)"/>
-
-  <text class="fc-head" x="210" y="296">THE PLUGIN</text>
-  <rect class="fc-box" x="210" y="308" width="300" height="58" rx="12"/>
-  <text class="fc-t" x="360" y="334" text-anchor="middle">Read the DEM window</text>
-  <text class="fc-s" x="360" y="353" text-anchor="middle">full resolution · cached tiles</text>
-  <path class="fc-arrow" d="M360 366 V390" marker-end="url(#ah)"/>
-  <rect class="fc-box" x="210" y="392" width="300" height="58" rx="12"/>
-  <text class="fc-t" x="360" y="418" text-anchor="middle">The line becomes a wall</text>
-  <text class="fc-s" x="360" y="437" text-anchor="middle">and gives the ground profile</text>
-  <path class="fc-arrow" d="M360 450 V474" marker-end="url(#ah)"/>
-  <rect class="fc-box" x="210" y="476" width="300" height="58" rx="12"/>
-  <text class="fc-t" x="360" y="502" text-anchor="middle">Water level h</text>
-  <text class="fc-s" x="360" y="521" text-anchor="middle">lower line end, or your limit if lower</text>
-  <path class="fc-arrow" d="M360 534 V558" marker-end="url(#ah)"/>
-  <rect class="fc-box" x="210" y="560" width="300" height="58" rx="12"/>
-  <text class="fc-t" x="360" y="586" text-anchor="middle">Find the upstream side</text>
-  <text class="fc-s" x="360" y="605" text-anchor="middle">short test flood on both sides</text>
-  <path class="fc-arrow" d="M360 618 V642" marker-end="url(#ah)"/>
-  <rect class="fc-box" x="210" y="644" width="300" height="58" rx="12"/>
-  <text class="fc-t" x="360" y="670" text-anchor="middle">Flood fill up to h</text>
-  <text class="fc-s" x="360" y="689" text-anchor="middle">connected cells only, never across the line</text>
-  <text class="fc-s" x="20" y="660">Stops early at a low point</text>
-  <text class="fc-s" x="20" y="677">in the rim: level lowered,</text>
-  <text class="fc-s" x="20" y="694">point marked on the map</text>
-  <path class="fc-arrow" d="M192 673 H208" stroke-dasharray="3 3"/>
-  <path class="fc-arrow" d="M360 702 V726" marker-end="url(#ah)"/>
-  <path class="fc-dec" d="M360 728 L485 772 L360 816 L235 772 Z"/>
-  <text class="fc-t" x="360" y="768" text-anchor="middle">Water reached</text>
-  <text class="fc-t" x="360" y="786" text-anchor="middle">the window edge?</text>
-  <path class="fc-arrow" d="M485 772 H588" marker-end="url(#ah)"/>
-  <text class="fc-lbl" x="500" y="764">yes</text>
-  <rect class="fc-box" x="590" y="744" width="170" height="58" rx="12"/>
-  <text class="fc-t" x="675" y="770" text-anchor="middle">Grow that side</text>
-  <text class="fc-s" x="675" y="789" text-anchor="middle">new tiles only</text>
-  <path class="fc-arrow" d="M675 744 V337 H512" marker-end="url(#ah)"/>
-  <path class="fc-arrow" d="M360 816 V858" marker-end="url(#ah)"/>
-  <text class="fc-lbl" x="370" y="843">no</text>
-  <rect class="fc-box" x="210" y="860" width="300" height="58" rx="12"/>
-  <text class="fc-t" x="360" y="886" text-anchor="middle">Curves and shoreline</text>
-  <text class="fc-s" x="360" y="905" text-anchor="middle">A(h), V(h), outline, depth raster</text>
-  <path class="fc-arrow" d="M360 918 V942" marker-end="url(#ah)"/>
-  <rect class="fc-key" x="210" y="944" width="300" height="64" rx="12"/>
-  <text class="fc-w" x="360" y="972" text-anchor="middle">Results</text>
-  <text class="fc-ws" x="360" y="992" text-anchor="middle">volume · level · area · depth · charts · layers</text>
+  <text class="fc-h" x="200" y="16">YOU</text>
+  <rect class="fc-u" x="200" y="26" width="160" height="50" rx="12"/><text class="fc-tu" x="280" y="56" text-anchor="middle">Draw a line</text>
+  <rect class="fc-u" x="380" y="26" width="160" height="50" rx="12"/><text class="fc-tu" x="460" y="56" text-anchor="middle">Pick a DEM</text>
+  <path class="fc-a" d="M280 76 V96 H370 V112" marker-end="url(#ah)"/><path class="fc-a" d="M460 76 V96 H370"/>
+  <rect class="fc-k" x="270" y="114" width="200" height="50" rx="12"/><text class="fc-w" x="370" y="144" text-anchor="middle">Create reservoir</text>
+  <path class="fc-a" d="M370 164 V206" marker-end="url(#ah)"/>
+  <text class="fc-h" x="200" y="198">THE PLUGIN</text>
+  <rect class="fc-b" x="200" y="208" width="340" height="54" rx="12"/><text class="fc-t" x="370" y="231" text-anchor="middle">Read the DEM</text><text class="fc-s" x="370" y="250" text-anchor="middle">full resolution</text>
+  <path class="fc-a" d="M370 262 V286" marker-end="url(#ah)"/>
+  <rect class="fc-b" x="200" y="288" width="340" height="54" rx="12"/><text class="fc-t" x="370" y="311" text-anchor="middle">Water level</text><text class="fc-s" x="370" y="330" text-anchor="middle">lower end of the line, or your limit</text>
+  <path class="fc-a" d="M370 342 V366" marker-end="url(#ah)"/>
+  <rect class="fc-b" x="200" y="368" width="340" height="54" rx="12"/><text class="fc-t" x="370" y="391" text-anchor="middle">Fill the valley</text><text class="fc-s" x="370" y="410" text-anchor="middle">upstream, connected water only</text>
+  <path class="fc-a" d="M370 422 V446" marker-end="url(#ah)"/>
+  <path class="fc-d" d="M370 448 L480 492 L370 536 L260 492 Z"/><text class="fc-t" x="370" y="488" text-anchor="middle">Reached the</text><text class="fc-t" x="370" y="505" text-anchor="middle">map edge?</text>
+  <path class="fc-a" d="M480 492 H558" marker-end="url(#ah)"/><text class="fc-l" x="496" y="484">yes</text>
+  <rect class="fc-b" x="560" y="466" width="150" height="54" rx="12"/><text class="fc-t" x="635" y="489" text-anchor="middle">Extend that side</text><text class="fc-s" x="635" y="508" text-anchor="middle">new tiles only</text>
+  <path class="fc-a" d="M635 466 V235 H542" marker-end="url(#ah)"/>
+  <path class="fc-a" d="M370 536 V574" marker-end="url(#ah)"/><text class="fc-l" x="380" y="560">no</text>
+  <rect class="fc-b" x="200" y="576" width="340" height="54" rx="12"/><text class="fc-t" x="370" y="599" text-anchor="middle">Curves and outline</text><text class="fc-s" x="370" y="618" text-anchor="middle">area, volume, depth</text>
+  <path class="fc-a" d="M370 630 V654" marker-end="url(#ah)"/>
+  <rect class="fc-k" x="270" y="656" width="200" height="50" rx="12"/><text class="fc-w" x="370" y="686" text-anchor="middle">Results</text>
 </svg>
 </div>
 
-<h2>The idea in one figure</h2>
-<figure><img src="images/methodology.png" alt="Plan, section and curves of a synthetic valley">
-<figcaption>Computed by the plugin on a synthetic valley. (a) Only water connected to the line counts;
-the hatched hollow is below the level but excluded. (b) The lower line end sets the level.
-(c) The resulting curves.</figcaption></figure>
-
-<div class="narrow">
-<h2>The steps</h2>
-
-<h3>1 · Water level</h3>
-<p>The ground is sampled along the line. With your optional limit:</p>
-<div class="formula">h = min( z<sub>start</sub>, z<sub>end</sub>, h<sub>max</sub>, z<sub>bed</sub> + d<sub>max</sub> )</div>
-
-<h3>2 · Upstream side</h3>
-<p>A short test flood runs on both sides of the line's lowest point. Downstream the water drains away
-along the river; the side where it rises is the reservoir.</p>
-
-<h3>3 · Connected water (flood fill)</h3>
-<p>From the line, cells are visited in order of their <b>spill level</b>, the water level at which
-each one joins the reservoir (4-connected neighbours, never across the line):</p>
-<div class="formula">s<sub>j</sub> = max( z<sub>j</sub>, s<sub>i</sub> )</div>
-<ul class="clean">
-  <li>stops at <b>h</b>: the reservoir is complete</li>
-  <li>reaches the far side of the line: a <b>low point in the rim</b>, so the level is lowered there</li>
-  <li>reaches the window edge: the window grows (step 4)</li>
-</ul>
-
-<h3>4 · A window that follows the water</h3>
-<p>The window starts at 20× the line length (5–30 km) and only the side the water reached is doubled.
-Downloaded DEMs come in cached 0.25° tiles, so growing fetches only new tiles.</p>
-</div>
-<div class="flow" style="max-width:600px;margin:14px auto">
-<svg viewBox="0 0 520 250" width="520" role="img" aria-label="The analysis window grows only toward the reservoir">
-  <rect x="20" y="20" width="480" height="210" rx="14" class="fc-user"/>
-  <rect x="300" y="100" width="130" height="100" rx="6" fill="none" stroke="#8a919c" stroke-width="1.6" stroke-dasharray="5 4"/>
-  <text class="fc-s" x="306" y="216">pass 1</text>
-  <rect x="170" y="100" width="260" height="100" rx="6" fill="none" stroke="#8a919c" stroke-width="1.6" stroke-dasharray="2 3"/>
-  <text class="fc-s" x="176" y="216">pass 2: west</text>
-  <rect x="40" y="40" width="390" height="160" rx="6" fill="none" stroke="#3a84f7" stroke-width="2"/>
-  <text class="fc-lbl" x="46" y="58">pass 3: west + north</text>
-  <path d="M372 172 C340 160 300 168 260 150 C220 132 190 150 150 128 C120 112 90 118 70 90 C62 76 86 70 100 86 C120 104 160 104 190 118 C230 136 262 128 300 146 C330 160 350 150 376 160 Z" fill="#2563eb" opacity=".55"/>
-  <path d="M362 176 L388 152" stroke="#eb6834" stroke-width="5" stroke-linecap="round"/>
-  <text class="fc-s" x="396" y="150">dam line</text>
-</svg>
+<h2>Four ideas</h2>
+<div class="cards two">
+  <div class="card"><h3>1 · The level</h3><p>Above the lower line end, water flows around it.</p>
+    <div class="formula">h = min(z<sub>ends</sub>, your limit)</div></div>
+  <div class="card"><h3>2 · Connected water</h3><p>Only cells reached from the line count.</p>
+    <div class="formula">s<sub>j</sub> = max(z<sub>j</sub>, s<sub>i</sub>) ≤ h</div></div>
+  <div class="card"><h3>3 · Area</h3><p>Flooded cells times cell area.</p>
+    <div class="formula">A(h) = N(h) · Δa</div></div>
+  <div class="card"><h3>4 · Volume</h3><p>Water depth over every flooded cell.</p>
+    <div class="formula">V(h) = Σ (h − z<sub>i</sub>) · Δa</div></div>
 </div>
 
-<div class="narrow">
-<h3>5 · Elevation–area–volume</h3>
-<p>With cell area Δa, ground z<sub>i</sub> and spill level s<sub>i</sub> of every reservoir cell:</p>
-<div class="formula">A(h) = N(h) · Δa &nbsp;&nbsp;&nbsp; V(h) = Σ<sub>s<sub>i</sub> ≤ h</sub> ( h − z<sub>i</sub> ) · Δa</div>
-<p>Cells are sorted once by spill level, so the whole curve is exact and needs no re-flooding.</p>
+<h2>In one picture</h2>
+<figure><img class="frame" src="images/methodology.png" alt="Plan, section and curves of a synthetic valley">
+<figcaption>(a) the hatched hollow is below the level but not connected, so it is not counted ·
+(b) the lower end sets the level · (c) the curves</figcaption></figure>
 
-<h3>6 · Shoreline and depth</h3>
-<p>The outline is a sub-cell contour at <b>h</b> on the reservoir cells; the depth raster is
-<b>h − z</b>.</p>
-
-<div class="note"><b>Resolution.</b> Always the DEM's own cells. Above 30 million cells the plugin
-asks for Fast mode instead of coarsening silently.</div>
-
-<h2 id="origin">Where the method comes from</h2>
-<p>The method is the one of <b>Reservoir Creator 1.0</b> (Gurbuz, 2021): a dam line across a valley
-defines the reservoir behind it, the water level is the highest level the line can hold, and the
-elevation–area–volume curve is computed from the DEM cells of the reservoir. Version 2 keeps these
-principles and changes how the reservoir's extent is found:</p>
+<h2 id="origin">Origin</h2>
+<p>The method is from Reservoir Creator 1.0 (Faruk Gurbuz, 2021). Version 2 finds the flooded area on the
+DEM instead of from contour lines.</p>
 <table>
-  <tr><th></th><th>Version 1</th><th>Version 2</th></tr>
-  <tr><td>Water level</td><td>highest contour crossing the line on both sides</td><td>lower end of the line (same principle, from the DEM)</td></tr>
-  <tr><td>Extent</td><td>that contour, closed by the dam line</td><td>cells connected to the line and below the level</td></tr>
-  <tr><td>Area, volume</td><td>cell count · Δa, Σ(h − z) · Δa</td><td>same formulas, exact at every level</td></tr>
-  <tr><td>Inputs</td><td>dam line, contour layer, DEM</td><td>dam line, DEM</td></tr>
+  <tr><th></th><th>v1</th><th>v2</th></tr>
+  <tr><td>Water level</td><td>highest contour the line crosses</td><td>lower end of the line</td></tr>
+  <tr><td>Flooded area</td><td>contour + dam line</td><td>connected DEM cells</td></tr>
+  <tr><td>Area, volume</td><td>N·Δa, Σ(h − z)·Δa</td><td>same</td></tr>
 </table>
-<p style="margin-top:12px">The connectivity step uses the standard Priority-Flood technique, described in
-Barnes, Lehman &amp; Mulla (2014), Computers &amp; Geosciences 62, 117–127.</p>
-</div>
-<div class="pager"><a class="card prev" href="guide.html"><small>Previous</small>User guide</a><a class="card next" href="validation.html"><small>Next</small>Validation</a></div>
+<p class="muted" style="margin-top:14px">Connectivity: Priority-Flood (Barnes et al., 2014).</p>
+<div class="pager"><a href="guide.html"><small>← Previous</small>User guide</a><a class="next" href="validation.html"><small>Next →</small>Validation</a></div>
+<p class="legal">Reservoir Creator · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</p>
 </main>
-<footer><div class="inner">
-  <span>Reservoir Creator · QGIS plugin · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</span>
-  <span><a href="https://github.com/gurbuzf/reservoir_creator">GitHub</a> · <a href="https://github.com/gurbuzf/reservoir_creator/issues">Report an issue</a></span>
-</div></footer>
+</div>
 </body>
 </html>

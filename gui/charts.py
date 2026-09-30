@@ -325,9 +325,8 @@ class CurveChart(BaseChart):
         trans = blended_transform_factory(ax_v.transAxes, ax_v.transData)
         ax_v.axhline(water_level, color=t['ink2'], lw=1.0, ls=(0, (5, 3)), zorder=5)
         self.badge(ax_v, 0.5, water_level,
-                   tr('{:.1f} m a.s.l. · {}').format(water_level, level_label), t['ink'],
-                   ha='center',
-                   va='bottom', dy=5, transform=trans, text_color=t['surface'])
+                   tr('{:.1f} m a.s.l. · {}').format(water_level, level_label), t['ink2'],
+                   ha='center', va='bottom', dy=5, transform=trans, filled=False)
         ax_v.axhline(self.bed, color=t['muted'], lw=0.9, ls=(0, (1, 2.5)), zorder=5)
         ax_v.annotate(tr('Riverbed {:.1f} m a.s.l.').format(self.bed), (0.5, self.bed),
                       xycoords=trans,

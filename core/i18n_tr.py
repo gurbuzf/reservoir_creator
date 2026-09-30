@@ -98,7 +98,7 @@ STRINGS = {
     'Step timings are written to View ▸ Panels ▸ Log Messages, tab "Reservoir Creator".':
         'Adım süreleri Görünüm ▸ Paneller ▸ Günlük İletileri\'nde, "Reservoir Creator" '
         'sekmesine yazılır.',
-    'Full documentation on GitHub': "GitHub'da ayrıntılı dokümantasyon",
+    'Full documentation': 'Ayrıntılı dokümantasyon',
 
     # step 1
     'Dam line': 'Baraj ekseni',

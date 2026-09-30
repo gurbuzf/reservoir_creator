@@ -22,7 +22,8 @@ def stylesheet(widget):
     t = theme.tokens(widget)
     t.update(
         # Colour roles: blue/teal = water and data only; neutral ink = interface
-        # (selection, badges, chips); azure-to-royal-blue gradient = the action.
+        # (cards, chips); one blue family for interaction: the gradient = the
+        # action, a soft tint of it = selected / active.
         warning_tint=theme.rgba(t['warning'], 0.14),
         critical_tint=theme.rgba(t['critical'], 0.12),
         hover=theme.rgba(t['ink'], 0.05),
@@ -44,7 +45,7 @@ def stylesheet(widget):
     QLabel#rcCardTitle {{ color: {ink}; }}
     QLabel#rcHint {{ color: {muted}; }}
     QLabel#rcStep {{
-        background: {track}; color: {ink2}; border-radius: 11px; font-weight: 700;
+        background: {select}; color: {select_text}; border-radius: 11px; font-weight: 700;
     }}
     QLabel#rcOverline {{ color: {muted}; }}
     QLabel#rcHeroValue {{ color: {ink}; }}
@@ -81,7 +82,7 @@ def stylesheet(widget):
     }}
     QPushButton#rcPill:hover, QToolButton#rcPill:hover {{ background: {hover}; }}
     QPushButton#rcPill:checked {{
-        background: {action_tint}; color: {action_text}; border-color: {action};
+        background: {select}; color: {select_text}; border-color: {select_line};
         font-weight: 600;
     }}
     QToolButton#rcPill {{ padding-right: 20px; }}
@@ -101,7 +102,8 @@ def stylesheet(widget):
     }}
     QToolButton#rcSeg:hover {{ color: {ink}; }}
     QToolButton#rcSeg:checked {{
-        background: {select}; color: {select_text}; font-weight: 600; border: none;
+        background: {seg_on}; color: {select_text}; font-weight: 600;
+        border: 1px solid {select_line};
     }}
 
     QFrame#rcBanner_info {{ background: {track}; border: none; border-radius: 10px; }}
@@ -154,7 +156,7 @@ def stylesheet(widget):
     }}
     QCheckBox::indicator:hover {{ border-color: {ink2}; }}
     QCheckBox::indicator:checked {{
-        background: {select}; border-color: {select}; image: url({icons}/{check_icon});
+        background: {action}; border-color: {action}; image: url({icons}/{check_icon});
     }}
 
     QScrollBar:vertical {{ background: transparent; width: 10px; margin: 2px 1px; }}

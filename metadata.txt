@@ -12,7 +12,7 @@ about=Draw a line across a valley (or pick a line layer). The water level (m abo
 
 tracker=https://github.com/gurbuzf/reservoir_creator/issues
 repository=https://github.com/gurbuzf/reservoir_creator
-homepage=https://github.com/gurbuzf/reservoir_creator
+homepage=https://gurbuzf.github.io/reservoir_creator/
 
 hasProcessingProvider=no
 changelog=

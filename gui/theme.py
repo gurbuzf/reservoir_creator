@@ -32,8 +32,10 @@ LIGHT = {
     'action2': '#2f4de6',       # ... to royal blue (gradient), also the logo's colours
     'action_hover': '#2a6fe6',
     'action2_hover': '#243cc9',
-    'select': '#1f2937',        # selected option in switches: neutral, not blue
-    'select_text': '#ffffff',
+    'select': '#e8effe',        # selected / active: a soft tint of the action blue
+    'select_text': '#2451d6',
+    'select_line': '#c7d7fb',
+    'seg_on': '#ffffff',        # selected segment of a switch
     'check_icon': 'check.svg',
     'critical': '#dc3b3b',
     'warning': '#e8a100',
@@ -64,9 +66,11 @@ DARK = {
     'action2': '#4059ee',
     'action_hover': '#62a0fa',
     'action2_hover': '#5a70f2',
-    'select': '#e5e7eb',
-    'select_text': '#111827',
-    'check_icon': 'check-dark.svg',
+    'select': '#253459',
+    'select_text': '#aac5ff',
+    'select_line': '#34497d',
+    'seg_on': '#253459',
+    'check_icon': 'check.svg',
     'critical': '#ef5350',
     'warning': '#f5b82e',
     'good': '#34c759',
