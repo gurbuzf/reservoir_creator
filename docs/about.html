@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About · Reservoir Creator</title>
+<meta name="description" content="Data sources, credits and development of Reservoir Creator.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="index.html"><img src="assets/logo.svg" alt="">Reservoir Creator</a>
+  <nav class="nav"><a href="index.html">Home</a><a href="getting-started.html">Get started</a><a href="guide.html">User guide</a><a href="how-it-works.html">How it works</a><a href="validation.html">Validation</a><a href="about.html" class="active">About</a></nav>
+</div></header>
+<main>
+<div class="narrow">
+<div class="eyebrow">About</div>
+<h1>Sources, credits and development</h1>
+
+<h2>Elevation data</h2>
+<div class="grid g2">
+  <div class="card"><h3>GEDTM30</h3><p>Ho, Y.-F. et al. (2025). GEDTM30: global ensemble digital terrain model
+    at 30 m. PeerJ 13:e19673.</p>
+    <p><a href="https://doi.org/10.7717/peerj.19673">DOI</a> ·
+    <a href="https://zenodo.org/records/18887460">Zenodo</a> · CC-BY 4.0</p></div>
+  <div class="card"><h3>Copernicus DEM GLO-30</h3><p>© DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH
+    2014–2018, provided under COPERNICUS by the European Union and ESA.</p>
+    <p><a href="https://registry.opendata.aws/copernicus-dem/">AWS Open Data</a></p></div>
+</div>
+
+<h2>Method</h2>
+<p>The method was developed by Faruk Gurbuz in <b>Reservoir Creator 1.0</b> (2021): water level from
+the dam line, reservoir behind it, elevation–area–volume from the DEM. Version 2 finds the reservoir
+extent directly on the DEM instead of from a contour layer (<a href="how-it-works.html#origin">details</a>).</p>
+<p>The connectivity step uses the Priority-Flood technique: Barnes, R., Lehman, C., Mulla, D. (2014).
+Priority-Flood: an optimal depression-filling and watershed-labeling algorithm for digital elevation
+models. Computers &amp; Geosciences 62, 117–127.
+<a href="https://doi.org/10.1016/j.cageo.2013.04.024">DOI</a></p>
+
+<h2>Built with</h2>
+<p><span class="chip">QGIS</span><span class="chip">GDAL</span><span class="chip">NumPy</span>
+<span class="chip">Matplotlib</span><span class="chip">Claude Opus 5.5</span></p>
+<p>Version 2 was developed and upgraded with the assistance of <b>Claude Opus 5.5</b>
+(<a href="https://www.anthropic.com/claude">Anthropic</a>), used for coding, testing and documentation
+under the author's direction and review.</p>
+
+<h2>Development</h2>
+<pre><code>core/    engine: numpy + GDAL, no Qt (unit tested)
+gui/     QGIS panel, charts, background task, exports
+tests/   pytest suite + whole plugin in a real QGIS (offscreen)</code></pre>
+<pre style="margin-top:10px"><code>make test     # unit tests
+make smoke    # whole plugin inside QGIS
+make zip      # installable plugin package</code></pre>
+<p style="margin-top:10px">Translations: every visible string goes through <code>tr()</code>; Turkish text lives in
+<code>core/i18n_tr.py</code>, and a test fails if one is missing.</p>
+
+<h2>License</h2>
+<p>© 2021–2026 Faruk Gurbuz. Free software under the
+<a href="https://github.com/gurbuzf/reservoir_creator/blob/master/LICENSE">GNU General Public License v3</a>.</p>
+</div>
+<div class="pager"><a class="card prev" href="validation.html"><small>Previous</small>Validation</a><span></span></div>
+</main>
+<footer><div class="inner">
+  <span>Reservoir Creator · QGIS plugin · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</span>
+  <span><a href="https://github.com/gurbuzf/reservoir_creator">GitHub</a> · <a href="https://github.com/gurbuzf/reservoir_creator/issues">Report an issue</a></span>
+</div></footer>
+</body>
+</html>

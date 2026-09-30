@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get started · Reservoir Creator</title>
+<meta name="description" content="Install Reservoir Creator and compute your first reservoir.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="index.html"><img src="assets/logo.svg" alt="">Reservoir Creator</a>
+  <nav class="nav"><a href="index.html">Home</a><a href="getting-started.html" class="active">Get started</a><a href="guide.html">User guide</a><a href="how-it-works.html">How it works</a><a href="validation.html">Validation</a><a href="about.html">About</a></nav>
+</div></header>
+<main>
+<div class="narrow">
+<div class="eyebrow">Get started</div>
+<h1>Install and run your first reservoir</h1>
+<p class="lead">Five minutes with the sample data included in the repository.</p>
+
+<h2>Install</h2>
+<div class="grid g3">
+  <div class="card"><h3>Plugin manager</h3>
+    <p><i>Plugins ▸ Manage and Install Plugins</i>, search <b>Reservoir Creator</b>.
+    Tick <i>Show also experimental plugins</i> in Settings.</p></div>
+  <div class="card"><h3>ZIP</h3>
+    <p>Download the <a href="https://github.com/gurbuzf/reservoir_creator/archive/refs/heads/master.zip">repository ZIP</a>, then
+    <i>Install from ZIP</i>.</p></div>
+  <div class="card"><h3>From source</h3>
+    <p>Clone the repository into your profile's <code>python/plugins</code> folder
+    (or link it there).</p></div>
+</div>
+<div class="note">Needs numpy, GDAL and matplotlib, all shipped with QGIS on Windows and macOS.
+On Linux install <code>python3-matplotlib</code> if it is missing.</div>
+
+<h2>First run with the sample data</h2>
+<div class="steps">
+  <div class="card step"><h3>Load the data</h3>
+    <p>Add <code>data/dem_utm37.tif</code> and <code>data/dam_line.shp</code> to a project (EPSG:32637).</p></div>
+  <div class="card step"><h3>Open the panel</h3>
+    <p>Click the Reservoir Creator toolbar button. It opens as its own window; <b>Dock</b> attaches it to QGIS.</p></div>
+  <div class="card step"><h3>Set the line</h3>
+    <p>Step 1: <b>From layer</b> ▸ <code>dam_line</code>. Or <b>Draw on map</b> and click across the valley, right-click to finish.</p></div>
+  <div class="card step"><h3>Set the DEM</h3>
+    <p>Step 2: <b>Project layer</b> ▸ <code>dem_utm37</code>.</p></div>
+  <div class="card step"><h3>Create reservoir</h3>
+    <p>Press the blue button at the bottom of the panel.</p></div>
+</div>
+
+<h3>Expected result</h3>
+<table>
+  <tr><th>Water level</th><th>Volume</th><th>Surface area</th><th>Max. depth</th></tr>
+  <tr><td>931.2 m a.s.l.</td><td>328 hm³</td><td>8.2 km²</td><td>≈120 m</td></tr>
+</table>
+<p style="margin-top:10px">Continue with the <a href="guide.html">user guide</a> to explore every option.</p>
+</div>
+<div class="pager"><a class="card prev" href="index.html"><small>Previous</small>Home</a><a class="card next" href="guide.html"><small>Next</small>User guide</a></div>
+</main>
+<footer><div class="inner">
+  <span>Reservoir Creator · QGIS plugin · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</span>
+  <span><a href="https://github.com/gurbuzf/reservoir_creator">GitHub</a> · <a href="https://github.com/gurbuzf/reservoir_creator/issues">Report an issue</a></span>
+</div></footer>
+</body>
+</html>

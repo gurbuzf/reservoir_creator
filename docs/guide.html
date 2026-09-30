@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User guide · Reservoir Creator</title>
+<meta name="description" content="Every part of the Reservoir Creator panel.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="index.html"><img src="assets/logo.svg" alt="">Reservoir Creator</a>
+  <nav class="nav"><a href="index.html">Home</a><a href="getting-started.html">Get started</a><a href="guide.html" class="active">User guide</a><a href="how-it-works.html">How it works</a><a href="validation.html">Validation</a><a href="about.html">About</a></nav>
+</div></header>
+<main>
+<div class="narrow">
+<div class="eyebrow">User guide</div>
+<h1>The panel, step by step</h1>
+<p class="lead">Three pages: <b>Reservoir</b> for the analysis, <b>References</b> for sources and
+links, <b>Guide</b> for a short in-app manual.</p>
+</div>
+
+<h2>1 · Dam line</h2>
+<div class="grid g2">
+  <div class="card"><h3>Draw on map</h3>
+    <ul class="clean"><li>Click from one valley side to the other</li><li>Right-click or Enter to finish</li>
+    <li>Backspace removes the last point, Esc cancels</li></ul></div>
+  <div class="card"><h3>From layer</h3>
+    <ul class="clean"><li>First line of a line layer</li><li>or <i>Use the selected feature</i></li></ul></div>
+</div>
+<div class="note"><b>Water level</b> = ground height at the <b>lower end of the line</b>, in metres above
+mean sea level. Above it, water would flow around that end.</div>
+<div class="grid g2">
+  <div class="card"><h3>Limit: maximum water level</h3><p>A design level in m a.s.l., e.g. to keep freeboard below the crest.</p></div>
+  <div class="card"><h3>Limit: maximum depth</h3><p>Metres above the riverbed at the line.</p></div>
+</div>
+<p>The lower of your limit and the line end is used. A limit the line cannot hold is reported,
+and the line's level is used.</p>
+
+<h2>2 · Elevation data</h2>
+<table>
+  <tr><th>Source</th><th>Type</th><th>Use it for</th></tr>
+  <tr><td><b>Project layer</b></td><td>any raster, any CRS</td><td>your own LiDAR / survey DTM (best)</td></tr>
+  <tr><td><b>GEDTM30</b></td><td>bare earth, 30 m</td><td>recommended global option</td></tr>
+  <tr><td><b>Copernicus GLO-30</b></td><td>surface model, 30 m</td><td>fast server; trees make valleys shallower</td></tr>
+</table>
+<div class="note">Downloads cover only the area the reservoir needs and are cached for later runs.
+<b>Fast mode</b> lowers the resolution for very large areas; it is off by default.</div>
+
+<h2>3 · Results</h2>
+<p>Nothing runs until you press <b>Create reservoir</b>. The headline is the <b>stored volume</b>,
+with water level, surface area and maximum depth below it.</p>
+<div class="shots">
+  <figure><img src="images/panel_curve.png" alt="E-A-V curve view"><figcaption>E-A-V curve</figcaption></figure>
+  <figure><img src="images/panel_profile.png" alt="Profile view"><figcaption>Profile</figcaption></figure>
+  <figure><img src="images/panel_table.png" alt="Table view"><figcaption>Table</figcaption></figure>
+</div>
+<div class="grid g3" style="margin-top:14px">
+  <div class="card"><h3>Add to map</h3><p>Outline, line and water-depth raster in a new group.</p></div>
+  <div class="card"><h3>Export</h3><p>GeoPackage · GeoTIFF · CSV · chart PNG (white, report-ready).</p></div>
+  <div class="card"><h3>⇄ Flip side</h3><p>If the water ever appears downstream, compute the other side.</p></div>
+</div>
+
+<h2>Settings</h2>
+<div class="grid g2">
+  <div class="card"><h3>⚙ Theme and language</h3><p>Auto / Light / Dark · English / Türkçe.</p></div>
+  <div class="card"><h3>Dock, Start over</h3><p><b>Dock</b> attaches the window; <b>↻</b> clears the line and results.</p></div>
+</div>
+<div class="shots" style="margin-top:14px">
+  <figure><img src="images/panel_turkish_dark.png" alt="Turkish, dark theme"><figcaption>Türkçe · dark</figcaption></figure>
+  <figure><img src="images/page_references.png" alt="References page"><figcaption>References page</figcaption></figure>
+  <figure><img src="images/page_guide.png" alt="Guide page"><figcaption>Guide page</figcaption></figure>
+</div>
+
+<h2>Tips</h2>
+<ul class="clean">
+  <li>Prefer a bare-earth DTM; surface models include trees and buildings.</li>
+  <li>Use a DEM made <b>before</b> the lake filled; afterwards it shows the water surface.</li>
+  <li>A warning about a <b>low point in the rim</b> means water escapes there first; it is marked on the map.</li>
+  <li>Step timings: <i>View ▸ Panels ▸ Log Messages</i>, tab <b>Reservoir Creator</b>.</li>
+</ul>
+<div class="pager"><a class="card prev" href="getting-started.html"><small>Previous</small>Get started</a><a class="card next" href="how-it-works.html"><small>Next</small>How it works</a></div>
+</main>
+<footer><div class="inner">
+  <span>Reservoir Creator · QGIS plugin · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</span>
+  <span><a href="https://github.com/gurbuzf/reservoir_creator">GitHub</a> · <a href="https://github.com/gurbuzf/reservoir_creator/issues">Report an issue</a></span>
+</div></footer>
+</body>
+</html>

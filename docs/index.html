@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservoir Creator</title>
+<meta name="description" content="Draw a line across a valley in QGIS and get the reservoir behind it.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="index.html"><img src="assets/logo.svg" alt="">Reservoir Creator</a>
+  <nav class="nav"><a href="index.html" class="active">Home</a><a href="getting-started.html">Get started</a><a href="guide.html">User guide</a><a href="how-it-works.html">How it works</a><a href="validation.html">Validation</a><a href="about.html">About</a></nav>
+</div></header>
+<main>
+<section class="hero">
+  <div>
+    <div class="eyebrow">QGIS plugin · 3.34 LTR to 4.x</div>
+    <h1>See the reservoir behind any line across a valley</h1>
+    <p class="lead">Draw a dam line, pick a DEM, press one button. Get the stored volume, water
+    level, surface area, maximum depth and the elevation–area–volume curves.</p>
+    <div class="actions">
+      <a class="btn primary" href="getting-started.html">Get started</a>
+      <a class="btn" href="how-it-works.html">How it works</a>
+      <a class="btn" href="https://github.com/gurbuzf/reservoir_creator">GitHub</a>
+    </div>
+  </div>
+  <div class="hero-art">
+    <img src="images/panel_curve.png" alt="The Reservoir Creator panel">
+    <img src="images/map.jpg" alt="A computed reservoir on a hillshade">
+  </div>
+</section>
+
+<h2>Three steps</h2>
+<div class="grid g3">
+  <div class="card"><div class="ico">1</div><h3>Draw the dam line</h3>
+    <p>Click across the valley, or use a line layer.</p></div>
+  <div class="card"><div class="ico">2</div><h3>Choose the DEM</h3>
+    <p>A layer in your project, or a global 30 m DEM downloaded for you.</p></div>
+  <div class="card"><div class="ico accent">3</div><h3>Create reservoir</h3>
+    <p>Results, charts and map layers in seconds.</p></div>
+</div>
+
+<h2>What you get</h2>
+<div class="grid g3">
+  <div class="card"><h3>Full resolution</h3><p>Computed on the DEM's own cells; a fast mode only if you ask.</p></div>
+  <div class="card"><h3>Design limits</h3><p>Optional maximum water level (m a.s.l.) or maximum depth.</p></div>
+  <div class="card"><h3>Connected water only</h3><p>Closed hollows below the level are not counted.</p></div>
+  <div class="card"><h3>Engineering charts</h3><p>Elevation–area–volume curves, profile and table.</p></div>
+  <div class="card"><h3>Global DEMs</h3><p>GEDTM30 or Copernicus, fetched in cached tiles.</p></div>
+  <div class="card"><h3>Ready to use</h3><p>GeoPackage, GeoTIFF, CSV, PNG · English / Türkçe · light / dark.</p></div>
+</div>
+
+<h2>Checked against a real dam</h2>
+<div class="grid g3">
+  <div class="card"><div class="eyebrow">Ilısu Dam · 525 m a.s.l.</div>
+    <div class="stat">10 508 <small>hm³</small></div><p>published: 10 410 hm³</p></div>
+  <div class="card"><div class="eyebrow">Surface area</div>
+    <div class="stat">310 <small>km²</small></div><p>published: 313 km²</p></div>
+  <div class="card"><div class="eyebrow">Second run</div>
+    <div class="stat">11 <small>s</small></div><p>18 million cells, from the tile cache</p></div>
+</div>
+<p style="margin-top:12px"><a href="validation.html">See all validation results →</a></p>
+<div class="pager"><span></span><a class="card next" href="getting-started.html"><small>Next</small>Get started</a></div>
+</main>
+<footer><div class="inner">
+  <span>Reservoir Creator · QGIS plugin · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</span>
+  <span><a href="https://github.com/gurbuzf/reservoir_creator">GitHub</a> · <a href="https://github.com/gurbuzf/reservoir_creator/issues">Report an issue</a></span>
+</div></footer>
+</body>
+</html>

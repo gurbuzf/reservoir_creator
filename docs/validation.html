@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validation · Reservoir Creator</title>
+<meta name="description" content="Validation of Reservoir Creator against exact and real results.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar"><div class="inner">
+  <a class="brand" href="index.html"><img src="assets/logo.svg" alt="">Reservoir Creator</a>
+  <nav class="nav"><a href="index.html">Home</a><a href="getting-started.html">Get started</a><a href="guide.html">User guide</a><a href="how-it-works.html">How it works</a><a href="validation.html" class="active">Validation</a><a href="about.html">About</a></nav>
+</div></header>
+<main>
+<div class="narrow">
+<div class="eyebrow">Validation</div>
+<h1>Does it get the numbers right?</h1>
+<p class="lead">Three independent checks: an exact formula, a satellite image and a large real dam.</p>
+
+<h2>1 · Exact solution</h2>
+<p>For a V-shaped valley z = z<sub>0</sub> + s|x| + g·y the volume and area at depth D are known exactly:</p>
+<div class="formula">V = D³ / (3 g s) &nbsp;&nbsp;&nbsp; A = D² / (g s)</div>
+<p>The automated tests require the plugin to match both within 3 % (5 % with a depth limit).</p>
+</div>
+
+<h2>2 · Sample dam against the real lake</h2>
+<div class="grid g2">
+  <figure><img src="images/map.jpg" alt="Computed reservoir"><figcaption>Computed from the sample DEM (made before the dam)</figcaption></figure>
+  <figure><img src="images/validation_satellite.jpg" alt="Satellite image of the reservoir"><figcaption>The actual reservoir</figcaption></figure>
+</div>
+
+<div class="narrow">
+<h2>3 · Ilısu Dam, Tigris</h2>
+<p>GEDTM30 downloaded by the plugin; 27.4 m cells, 18 million cells, a lake more than 100 km long.
+Read from the curve at the normal water level:</p>
+<table>
+  <tr><th>At 525 m a.s.l.</th><th class="num">Reservoir Creator</th><th class="num">Published</th><th class="num">Difference</th></tr>
+  <tr><td>Surface area</td><td class="num">310.1 km²</td><td class="num">313 km²</td><td class="num">−0.9 %</td></tr>
+  <tr><td>Volume</td><td class="num">10 508 hm³</td><td class="num">10 410 hm³</td><td class="num">+0.9 %</td></tr>
+</table>
+
+<h2>Speed</h2>
+<div class="grid g2">
+  <div class="card"><div class="eyebrow">First run · Ilısu</div><div class="stat">129 <small>s</small></div>
+    <p>4 window enlargements, 40 tiles downloaded</p></div>
+  <div class="card"><div class="eyebrow">Later runs</div><div class="stat">11 <small>s</small></div>
+    <p>tiles from the local cache</p></div>
+</div>
+<div class="note warn"><b>Mind the DEM.</b> Global 30 m DEMs have errors of a few metres, which matter
+for shallow reservoirs. For design work use a local LiDAR or survey DTM made before impoundment.</div>
+</div>
+<div class="pager"><a class="card prev" href="how-it-works.html"><small>Previous</small>How it works</a><a class="card next" href="about.html"><small>Next</small>About</a></div>
+</main>
+<footer><div class="inner">
+  <span>Reservoir Creator · QGIS plugin · GNU GPL v3 · © 2021–2026 Faruk Gurbuz</span>
+  <span><a href="https://github.com/gurbuzf/reservoir_creator">GitHub</a> · <a href="https://github.com/gurbuzf/reservoir_creator/issues">Report an issue</a></span>
+</div></footer>
+</body>
+</html>
