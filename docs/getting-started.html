@@ -27,20 +27,23 @@
 <p class="sub">Install, then try the sample data. About five minutes.</p>
 
 <h2>Install</h2>
-<div class="cards">
-  <div class="card"><div class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg></div><h3>Plugin manager</h3>
-    <p>Search <b>Reservoir Creator</b>. Enable experimental plugins.</p></div>
-  <div class="card"><div class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17H7a5 5 0 0 1 0-10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8"/></svg></div><h3>ZIP</h3>
-    <p><a href="https://github.com/gurbuzf/reservoir_creator/archive/refs/heads/master.zip">Download</a>, then <i>Install from ZIP</i>.</p></div>
-  <div class="card"><div class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13 5l-2 14"/></svg></div><h3>Source</h3>
-    <p>Clone into your profile's <code>python/plugins</code>.</p></div>
+<p>Not in the official QGIS plugin repository yet: install it from GitHub.</p>
+<div class="btns" style="margin-top:18px">
+  <a class="btn primary" href="https://github.com/gurbuzf/reservoir_creator/archive/refs/heads/master.zip"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download ZIP</a>
+  <a class="btn" href="https://github.com/gurbuzf/reservoir_creator">Open on GitHub</a>
 </div>
-<div class="note"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>QGIS 3.28 to 4.x. Works on Windows, macOS and Linux.</span></div>
+<div class="steps" style="margin-top:30px">
+  <div><h3>Download the ZIP</h3><p>Button above, or on GitHub: <b>Code ▸ Download ZIP</b>. Keep it zipped.</p></div>
+  <div><h3>Install from ZIP</h3><p>In QGIS: <b>Plugins ▸ Manage and Install Plugins ▸ Install from ZIP</b>,
+    choose the file, <b>Install Plugin</b>. Confirm the security warning.</p></div>
+  <div><h3>Open it</h3><p>Make sure <b>Reservoir Creator</b> is ticked under <b>Installed</b>; its button appears in the toolbar.</p></div>
+</div>
+<div class="note"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>QGIS 3.28 to 4.x · Windows, macOS, Linux. To update, install the newest ZIP the same way.</span></div>
 
 <h2>Try the sample</h2>
 <div class="row">
   <div class="steps">
-    <div><h3>Load the data</h3><p><code>data/dem_utm37.tif</code> and <code>data/dam_line.shp</code></p></div>
+    <div><h3>Load the data</h3><p><code>data/dem_utm37.tif</code> and <code>data/dam_line.shp</code> from the downloaded ZIP</p></div>
     <div><h3>Open the panel</h3><p>toolbar button</p></div>
     <div><h3>Line</h3><p><b>From layer</b> ▸ dam_line</p></div>
     <div><h3>DEM</h3><p><b>Project layer</b> ▸ dem_utm37</p></div>

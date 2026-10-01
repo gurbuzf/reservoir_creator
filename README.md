@@ -26,8 +26,18 @@ computed from a DEM.
 
 ## Install
 
-*Plugins ▸ Manage and Install Plugins*, search **Reservoir Creator** (enable
-experimental plugins), or install the repository ZIP with *Install from ZIP*.
+The plugin is not in the official QGIS plugin repository yet; install it from
+GitHub:
+
+1. **Download the ZIP**: green **Code** button ▸ **Download ZIP**
+   ([direct link](https://github.com/gurbuzf/reservoir_creator/archive/refs/heads/master.zip)).
+   Keep it zipped.
+2. In QGIS: **Plugins ▸ Manage and Install Plugins ▸ Install from ZIP**, choose
+   the file, **Install Plugin**, and confirm the security warning.
+3. Make sure **Reservoir Creator** is ticked under **Installed**; its button
+   appears in the toolbar.
+
+To update, install the newest ZIP the same way.
 
 ## Quick start
 
@@ -36,7 +46,7 @@ experimental plugins), or install the repository ZIP with *Install from ZIP*.
 3. Choose a DEM layer, or **Download** GEDTM30.
 4. Press **Create reservoir**.
 
-Sample data: `data/dem_utm37.tif` and `data/dam_line.shp` (≈ 328 hm³ at
+Sample data (in the ZIP): `data/dem_utm37.tif` and `data/dam_line.shp` (≈ 328 hm³ at
 931.2 m a.s.l.). See the [user guide](https://gurbuzf.github.io/reservoir_creator/guide.html)
 and [how it works](https://gurbuzf.github.io/reservoir_creator/how-it-works.html).
 
