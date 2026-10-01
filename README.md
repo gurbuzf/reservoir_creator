@@ -50,14 +50,6 @@ Sample data (in the ZIP): `data/dem_utm37.tif` and `data/dam_line.shp` (≈ 328 
 931.2 m a.s.l.). See the [user guide](https://gurbuzf.github.io/reservoir_creator/guide.html)
 and [how it works](https://gurbuzf.github.io/reservoir_creator/how-it-works.html).
 
-## Development
-
-```
-make test     # unit tests (engine, translations)
-make smoke    # whole plugin inside QGIS, offscreen
-make zip      # installable package
-```
-
 ## Credits
 
 * **Method**: Faruk Gurbuz, Reservoir Creator 1.0 (2021). Version 2 finds the
