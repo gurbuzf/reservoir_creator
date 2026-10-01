@@ -151,3 +151,6 @@ pb_tool.cfg
 build/
 # GDAL side-car statistics
 *.aux.xml
+
+# promotional video material (local only)
+advertisement/
