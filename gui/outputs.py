@@ -12,14 +12,23 @@ from qgis.core import (QgsColorRampShader, QgsCoordinateReferenceSystem,
                        QgsStyle, QgsVectorFileWriter, QgsVectorLayer)
 
 from ..core import terrain
-from ..core.i18n import tr
+from ..core.i18n import N_, tr
 from . import theme
 
-RES_FIELDS = [('level_m', 'double'), ('area_km2', 'double'), ('volume_mm3', 'double'),
-              ('max_dep_m', 'double')]
-LINE_FIELDS = [('start_m', 'double'), ('end_m', 'double'), ('length_m', 'double')]
-TABLE_FIELDS = [('level_m', 'double'), ('area_m2', 'double'), ('area_km2', 'double'),
-                ('volume_m3', 'double'), ('volume_mm3', 'double')]
+# (field name, type, header shown in the attribute table).  Names say what and in which
+# unit (masl = metres above mean sea level, hm3 = million m3); the headers are translated.
+RES_FIELDS = [('water_level_masl', 'double', N_('Water level (m a.s.l.)')),
+              ('surface_area_km2', 'double', N_('Surface area (km²)')),
+              ('volume_hm3', 'double', N_('Volume (hm³)')),
+              ('max_depth_m', 'double', N_('Max. depth (m)'))]
+LINE_FIELDS = [('start_elev_masl', 'double', N_('Ground at line start (m a.s.l.)')),
+               ('end_elev_masl', 'double', N_('Ground at line end (m a.s.l.)')),
+               ('length_m', 'double', N_('Length (m)'))]
+TABLE_FIELDS = [('elevation_masl', 'double', N_('Elevation (m a.s.l.)')),
+                ('area_m2', 'double', N_('Area (m²)')),
+                ('area_km2', 'double', N_('Area (km²)')),
+                ('volume_m3', 'double', N_('Volume (m³)')),
+                ('volume_hm3', 'double', N_('Volume (hm³)'))]
 
 
 def result_crs(res):
@@ -28,10 +37,12 @@ def result_crs(res):
 
 def _memory_layer(geom_type, name, crs, fields):
     uri = geom_type + ('?crs=' + crs.authid() if crs is not None and crs.authid() else '?')
-    uri += ''.join('&field={}:{}'.format(n, t) for n, t in fields)
+    uri += ''.join('&field={}:{}'.format(n, t) for n, t, _a in fields)
     layer = QgsVectorLayer(uri, name, 'memory')
     if crs is not None and not crs.authid():
         layer.setCrs(crs)
+    for i, (_n, _t, alias) in enumerate(fields):
+        layer.setFieldAlias(i, tr(alias))
     return layer
 
 
@@ -118,7 +129,7 @@ def write_csv(res, path):
     lv, a, v = res.curve()
     with open(path, 'w', newline='', encoding='utf-8') as fh:
         w = csv.writer(fh)
-        w.writerow(['level_m', 'area_m2', 'area_km2', 'volume_m3', 'volume_million_m3'])
+        w.writerow([n for n, _t, _a in TABLE_FIELDS])
         for h, aa, vv in zip(lv, a, v):
             w.writerow(['{:.3f}'.format(h), '{:.1f}'.format(aa), '{:.5f}'.format(aa / 1e6),
                         '{:.1f}'.format(vv), '{:.5f}'.format(vv / 1e6)])

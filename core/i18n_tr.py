@@ -263,6 +263,13 @@ STRINGS = {
 
     # layers / clipboard
     'Water depth': 'Su derinliği',
+    'Water level (m a.s.l.)': 'Su kotu (m)',
+    'Max. depth (m)': 'Maks. derinlik (m)',
+    'Ground at line start (m a.s.l.)': 'Çizgi başında zemin kotu (m)',
+    'Ground at line end (m a.s.l.)': 'Çizgi sonunda zemin kotu (m)',
+    'Length (m)': 'Uzunluk (m)',
+    'Area (m²)': 'Alan (m²)',
+    'Volume (m³)': 'Hacim (m³)',
     'Elevation-area-volume': 'Kot-alan-hacim',
     'Reservoir {:.1f} m a.s.l.': 'Rezervuar (kot {:.1f} m)',
     'Water level (m a.s.l.)\tArea (km²)\tVolume (million m³)':
