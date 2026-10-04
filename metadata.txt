@@ -6,7 +6,7 @@ qgisMaximumVersion=4.99
 # versions of QGIS", pyplugin_installer/installer_data.py); harmless elsewhere.
 supportsQt6=True
 description=Draw a line across a valley and get the reservoir behind it: water level, volume, surface area and elevation-area-volume curves from a DEM.
-version=2.0.0
+version=2.1.0
 author=Faruk Gurbuz
 email=gurbuz2561@gmail.com
 
@@ -18,13 +18,19 @@ homepage=https://gurbuzf.github.io/reservoir_creator/
 
 hasProcessingProvider=no
 changelog=
+    2.1.0
+    - Exported layers and CSV: descriptive column names - water_level_masl, surface_area_km2, volume_hm3 (was volume_mm3), max_depth_m, start_elev_masl / end_elev_masl, elevation_masl (was level_m); readable, translated headers in the attribute table
+    - QGIS 3.28 supported (minimum lowered from 3.34)
+    - Loads again on Qt6 builds of QGIS 3.x (supportsQt6 restored)
+    - Documentation website in English and Turkish; the plugin opens it in its own language
+    - More coherent colours: one blue family for actions and selections
     2.0.0
     - Rewrite: draw the dam line on the map (or use a line layer); the water level is the lower end of the line; the reservoir is computed from the DEM only - no contour layer and no other parameters
     - Hollows that are not connected to the reservoir are no longer counted; a lower way out through the valley rim is detected and marked
     - Upstream side and analysis area found automatically; any DEM CRS works
     - DEM download for the area around the line (GEDTM30, Copernicus GLO-30), cancellable
     - Dockable panel with interactive area-volume curve and line profile; results added to the map or exported
-    - Runs in the background; QGIS 3.28 to QGIS 4 (Qt5 and Qt6)
+    - Runs in the background; QGIS 3.34 LTR to QGIS 4 (Qt5 and Qt6)
     - Full DEM resolution by default; optional Fast mode for very large areas
     - Optional design limit: maximum water level (m a.s.l.) or maximum depth above the riverbed
     - Analysis window grows only towards the reservoir; downloads in cached tiles (fast re-runs)
